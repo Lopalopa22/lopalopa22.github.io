@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airport Live Board - Compact</title>
+    <title>Airport Live Board - Compact Final</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
         
@@ -93,7 +93,7 @@
             width: 100%;
             height: 100%;
             border-collapse: collapse;
-            font-size: 0.7rem; /* УМЕНЬШЕННЫЙ ШРИФТ */
+            font-size: 0.7rem;
             color: #fff;
             line-height: 1.2;
         }
@@ -101,7 +101,7 @@
         th {
             background: #2a2a2a;
             color: #ccc;
-            padding: 6px 5px; /* КОМПАКТНЫЕ ОТСТУПЫ */
+            padding: 6px 5px;
             text-align: left;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -111,7 +111,7 @@
         }
         
         td {
-            padding: 6px 5px; /* КОМПАКТНЫЕ ОТСТУПЫ */
+            padding: 6px 5px;
             border-bottom: 1px solid #333;
             font-weight: 500;
         }
@@ -283,7 +283,7 @@
                 const data = JSON.parse(proxyData.contents);
                 
                 if (data.response_code === 200 && data.response && data.response.length > 0) {
-                    processFlights(data.response.slice(0, 100)); // Берем первые 100 рейсов
+                    processFlights(data.response.slice(0, 100));
                     return true;
                 } else {
                     throw new Error('No flight data');
@@ -393,7 +393,6 @@
                     `;
                     tbody.appendChild(row);
                 } else {
-                    // Пустые строки для ровного вида
                     const row = document.createElement('tr');
                     row.innerHTML = '<td colspan="4">&nbsp;</td>';
                     tbody.appendChild(row);
