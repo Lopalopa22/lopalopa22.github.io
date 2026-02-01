@@ -3,56 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body { 
-      margin: 0; 
-      font-family: 'Courier New', monospace; 
-      background: #000; 
-      color: #0f0; 
-      font-size: 1.8vw; 
-      overflow: hidden; 
+      font-family: 'Courier New', 'OCR A Std', monospace; 
+      background: linear-gradient(180deg, #000 0%, #001122 100%); 
+      color: #00ff00; 
+      font-size: 2.2vw; 
+      height: 100vh; 
+      overflow: hidden;
     }
     .header { 
+      background: linear-gradient(90deg, #003300, #006600, #003300); 
       text-align: center; 
-      font-size: 3vw; 
-      margin: 10px; 
-      color: #ff0; 
+      padding: 15px; 
+      font-size: 3.5vw; 
+      color: #ffff00; 
+      text-shadow: 0 0 10px #ffff00;
+      border-bottom: 3px solid #00ff00;
     }
-    .section { margin: 15px; }
+    .time { font-size: 2.5vw; color: #00ffff; font-weight: bold; }
+    .section { 
+      padding: 20px; 
+      height: 48%; 
+      display: flex; 
+      flex-direction: column;
+    }
     .section h2 { 
-      color: #ff0; 
-      font-size: 2.2vw; 
-      margin-bottom: 8px; 
+      color: #ffff00; 
+      font-size: 2.8vw; 
+      margin-bottom: 10px; 
+      text-align: center;
+      text-shadow: 0 0 5px #ffff00;
     }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { 
-      padding: 6px; 
+    table { 
+      flex: 1; 
+      width: 100%; 
+      border-collapse: collapse; 
+      background: rgba(0,20,0,0.8);
+      box-shadow: 0 0 20px rgba(0,255,0,0.3);
+    }
+    th { 
+      background: linear-gradient(90deg, #002200, #004400); 
+      color: #00ff00; 
+      padding: 8px; 
       text-align: center; 
-      border-bottom: 1px solid #333; 
-      font-size: 1.6vw; 
+      font-size: 1.8vw;
+      border-bottom: 2px solid #00ff00;
+      text-shadow: 0 0 3px #00ff00;
     }
-    th { background: #001a00; color: #0f0; }
-    .active { color: #00ff00; font-weight: bold; }
+    td { 
+      padding: 8px; 
+      text-align: center; 
+      border-bottom: 1px solid #003300; 
+      font-size: 1.9vw;
+    }
+    .active { color: #00ff00; text-shadow: 0 0 5px #00ff00; }
     .scheduled { color: #ffff00; }
-    .delayed { color: #ff6600; animation: blink 1s infinite; }
-    .cancelled { color: #ff0000; animation: blink 0.5s infinite; }
-    @keyframes blink { 50% { opacity: 0.4; } }
+    .delayed { color: #ff6600; animation: blink 1s infinite; text-shadow: 0 0 5px #ff6600; }
+    .cancelled { color: #ff0000; animation: blink 0.6s infinite; text-shadow: 0 0 8px #ff0000; }
+    @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0.4; } }
+    .terminal { background: rgba(0,255,0,0.2); padding: 2px 6px; border-radius: 3px; font-size: 1.6vw; }
   </style>
 </head>
 <body>
-  <div class="header">🛫 ШЕРЕМЕТЬЕВО (SVO) 🛬 <span id="localTime" style="font-size: 2vw; color: #0ff;"></span></div>
+  <div class="header">
+    🛫 АЭРОПОРТ ШЕРЕМЕТЬЕВО (SVO) 🛬 
+    <div class="time" id="localTime">МСК 15:31</div>
+  </div>
   
   <div class="section">
-    <h2>📤 ВЫЛЕТЫ (5)</h2>
+    <h2>📤 ВЫЛЕТЫ (ближайший час)</h2>
     <table id="departures">
-      <thead><tr><th>Рейс</th><th>Куда</th><th>Время</th><th>Статус</th></tr></thead>
+      <thead><tr><th>Рейс</th><th>Куда</th><th>Время</th><th>Статус</th><th>Терминал</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
   
   <div class="section">
-    <h2>📥 ПРИЛЁТЫ (5)</h2>
+    <h2>📥 ПРИЛЁТЫ (ближайший час)</h2>
     <table id="arrivals">
-      <thead><tr><th>Рейс</th><th>Откуда</th><th>Время</th><th>Статус</th></tr></thead>
+      <thead><tr><th>Рейс</th><th>Откуда</th><th>Время</th><th>Статус</th><th>Терминал</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
@@ -71,7 +101,7 @@
     
     async function loadDepartures() {
       try {
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=20&access_key=${API_KEY}`);
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=30&access_key=${API_KEY}`);
         const data = await res.json();
         updateTable('departures', data.data, 'departure');
       } catch(e) { console.error('Вылеты:', e); }
@@ -79,7 +109,7 @@
     
     async function loadArrivals() {
       try {
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=20&access_key=${API_KEY}`);
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=30&access_key=${API_KEY}`);
         const data = await res.json();
         updateTable('arrivals', data.data, 'arrival');
       } catch(e) { console.error('Прилёты:', e); }
@@ -90,26 +120,38 @@
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
       
-      // БЕРЁМ ПЕРВЫЕ 5 рейсов (БЕЗ фильтра времени!)
-      flights.slice(0, 5).forEach(flight => {
+      const now = new Date();
+      
+      // 🚨 ФИЛЬТР: ТОЛЬКО ближайший час (±30 мин)
+      const nearFlights = flights
+        .filter(flight => {
+          const scheduledTime = new Date(flight[type]?.scheduled);
+          const diffMinutes = (scheduledTime - now) / (1000 * 60);
+          return diffMinutes >= -30 && diffMinutes <= 60; // -30м +60м от сейчас
+        })
+        .sort((a, b) => new Date(a[type]?.scheduled) - new Date(b[type]?.scheduled))
+        .slice(0, 5);
+      
+      // Если нет рейсов ближайший час — первые 5
+      const displayFlights = nearFlights.length ? nearFlights : flights.slice(0, 5);
+      
+      displayFlights.forEach(flight => {
         const status = (flight.flight_status || 'scheduled').toLowerCase();
         const statusClass = status.includes('active') ? 'active' : 
                            status.includes('delay') || status.includes('late') ? 'delayed' : 
                            status.includes('cancel') ? 'cancelled' : 'scheduled';
         
-        // ВРЕМЯ МСК
-        let flightTime = '—';
-        try {
-          flightTime = new Date(flight[type]?.scheduled).toLocaleTimeString('ru-RU', {
-            timeZone: 'Europe/Moscow',
-            hour: '2-digit', 
-            minute: '2-digit'
-          });
-        } catch(e) {}
+        const scheduledTime = flight[type]?.scheduled;
+        const flightTime = scheduledTime ? new Date(scheduledTime).toLocaleTimeString('ru-RU', {
+          timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit'
+        }) : '—';
         
-        const city = (type === 'departure' ? flight.arrival?.airport : flight.departure?.airport || 'N/A')
-          .replace(' International Airport', '').replace(' Airport', '').replace(' Intl', '');
+        const city = type === 'departure' ? 
+          (flight.arrival?.airport || '').replace(' International Airport', '').replace(' Airport', '') :
+          (flight.departure?.airport || '').replace('Sheremetyevo International', '');
+          
         const flightNum = flight.flight?.iata || flight.flight?.icao?.slice(-4) || 'N/A';
+        const terminal = flight[type]?.terminal || '?';
         
         const row = tbody.insertRow();
         row.innerHTML = `
@@ -117,14 +159,15 @@
           <td>${city}</td>
           <td>${flightTime}</td>
           <td class="${statusClass}">${status.toUpperCase()}</td>
+          <td class="terminal">${terminal}</td>
         `;
       });
     }
     
-    // Запуск и обновление
+    // Запуск и обновление каждые 2 минуты
     loadDepartures();
     loadArrivals();
-    setInterval(() => { loadDepartures(); loadArrivals(); }, 60000);
+    setInterval(() => { loadDepartures(); loadArrivals(); }, 120000);
   </script>
 </body>
 </html>
