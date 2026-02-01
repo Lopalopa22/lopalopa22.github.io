@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berlin BER - Live Departures & Arrivals</title>
+    <title>Airport Live Board - Real Flights</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Digital-7%7CDSEG7+Classic&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
         
         * {
             margin: 0;
@@ -14,355 +14,407 @@
         }
         
         body {
-            background: linear-gradient(135deg, #000 0%, #001a00 50%, #000 100%);
-            color: #00ff41;
-            font-family: 'Orbitron', 'Digital-7', monospace;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            font-family: 'Roboto Condensed', sans-serif;
             height: 100vh;
             overflow: hidden;
         }
         
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
+        .screen-frame {
+            width: 96%;
+            height: 94%;
+            margin: 20px auto;
+            background: linear-gradient(145deg, #333 0%, #222 100%);
+            border: 6px solid #444;
+            border-radius: 12px;
+            box-shadow: 
+                0 0 40px rgba(0,0,0,0.8),
+                inset 0 0 40px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .led-screen {
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(0,255,65,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(0,255,65,0.04) 0%, transparent 50%);
-            z-index: -1;
-            animation: bgPulse 10s ease-in-out infinite;
+            background: #111;
+            padding: 25px;
+            box-sizing: border-box;
+            position: relative;
         }
         
-        @keyframes bgPulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-        
-        .header {
-            position: fixed;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.95);
-            padding: 15px 30px;
-            border: 3px solid #00ff41;
-            color: #00ff41;
-            font-size: 18px;
-            font-weight: 900;
-            z-index: 1000;
-            letter-spacing: 3px;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,255,65,0.6);
+        .main-header {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            color: #eee;
             text-transform: uppercase;
         }
         
-        .live-dot {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            background: #00ff41;
-            border-radius: 50%;
-            margin: 0 15px;
-            animation: blink 1.2s infinite;
+        .airport-code {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #ccc;
+            font-weight: 400;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
         }
         
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
-        }
-        
-        .container {
+        .boards-container {
             display: flex;
-            height: 100vh;
-            padding-top: 80px;
-            gap: 2px;
+            gap: 20px;
+            height: calc(100% - 110px);
         }
         
-        .panel {
+        .board {
             flex: 1;
-            background: rgba(0,20,0,0.98);
-            border: 3px solid #00ff41;
-            position: relative;
+            background: rgba(20,20,20,0.95);
+            border: 3px solid #555;
+            border-radius: 8px;
+            padding: 20px;
             overflow: hidden;
         }
         
-        .panel-header {
-            background: linear-gradient(90deg, #002a00 0%, #004400 100%);
-            padding: 20px;
+        .board-header {
             text-align: center;
-            font-size: clamp(2rem, 6vw, 3.5rem);
-            font-weight: 900;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #666;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            letter-spacing: 8px;
-            border-bottom: 4px solid #00ff41;
-            position: relative;
-            box-shadow: inset 0 0 30px rgba(0,255,65,0.3);
         }
         
-        .departures .panel-header { border-color: #00ff88; }
-        .arrivals .panel-header { border-color: #88ff00; }
+        .departures .board-header { color: #ddd; border-color: #777; }
+        .arrivals .board-header { color: #bbb; border-color: #666; }
         
         table {
             width: 100%;
             height: 100%;
             border-collapse: collapse;
-            font-size: clamp(15px, 2.2vw, 20px);
+            font-size: 0.95rem;
+            color: #fff;
         }
         
         th {
-            background: linear-gradient(90deg, #003300 0%, #005500 100%);
-            padding: 18px 10px;
+            background: #2a2a2a;
+            color: #ccc;
+            padding: 12px 8px;
             text-align: left;
-            font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            border-bottom: 3px solid #00ff41;
-            font-size: 0.8em;
-            position: sticky;
-            top: 0;
-            z-index: 5;
+            letter-spacing: 1px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-bottom: 2px solid #444;
         }
         
         td {
-            padding: 22px 12px;
-            border-bottom: 1px solid rgba(0,255,65,0.25);
-            font-weight: 800;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            position: relative;
+            padding: 14px 8px;
+            border-bottom: 1px solid #333;
+            font-weight: 500;
         }
         
         tr:hover td {
-            background: rgba(0,255,65,0.12);
-            box-shadow: inset 0 0 25px rgba(0,255,65,0.25);
-            transform: scale(1.02);
+            background: rgba(255,255,255,0.05);
         }
         
         .time {
-            font-family: 'Digital-7', monospace;
-            font-size: 1.8em;
-            color: #00ffaa;
-            letter-spacing: 4px;
-            font-weight: 900;
-            min-width: 85px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-width: 70px;
+            color: #fff;
         }
         
         .flight {
-            font-size: 1.6em;
-            font-weight: 900;
-            color: #ffaa00;
-            letter-spacing: 3px;
-            min-width: 95px;
-            text-shadow: 0 0 8px #ffaa00;
+            font-size: 1rem;
+            font-weight: 700;
+            min-width: 85px;
+            color: #e0e0e0;
         }
         
         .city {
-            font-weight: 800;
-            color: #aaffff;
-            min-width: 150px;
+            min-width: 140px;
+            color: #ddd;
         }
         
         .status {
             text-align: center;
-            padding: 12px 18px;
-            border-radius: 25px;
-            font-weight: 900;
-            font-size: 0.95em;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            border: 2px solid;
-            min-width: 110px;
-            box-shadow: 0 0 15px currentColor;
+            letter-spacing: 0.5px;
+            min-width: 90px;
         }
         
-        .status.on-time { 
-            background: rgba(0,255,100,0.25); 
-            color: #00ff66; 
-            border-color: #00ff66;
-            animation: pulse 2.5s infinite;
+        .status.scheduled { 
+            background: #4a5568; 
+            color: #a0aec0; 
+            border: 1px solid #718096;
+        }
+        .status.ontime { 
+            background: #2f855a; 
+            color: #ffffff; 
+            border: 1px solid #38a169;
         }
         .status.delayed { 
-            background: rgba(255,170,0,0.35); 
-            color: #ffaa00; 
-            border-color: #ffaa00;
-            animation: shake 0.5s infinite;
+            background: #c53030; 
+            color: #ffffff; 
+            border: 1px solid #e53e3e;
+            animation: pulse 2s infinite;
         }
         .status.landed { 
-            background: rgba(100,255,100,0.2); 
-            color: #66ff66; 
-            border-color: #66ff66;
-        }
-        .status.boarding { 
-            background: rgba(255,255,100,0.2); 
-            color: #ffff66; 
-            border-color: #ffff66;
+            background: #2b6cb0; 
+            color: #ffffff; 
+            border: 1px solid #4299e1;
         }
         
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 15px currentColor; }
-            50% { box-shadow: 0 0 30px currentColor; }
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-2px); }
-            75% { transform: translateX(2px); }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
         
-        .scanline {
+        .status-bar {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #00ff41, #ffff41, #00ff41, transparent);
-            animation: scanline 3s linear infinite;
-            z-index: 2;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 1px solid #555;
+            color: #aaa;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
         }
         
-        @media (max-width: 1200px) {
-            .container { flex-direction: column; }
-            .panel { height: 50vh; }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-style: italic;
+        }
+        
+        @media (max-width: 1024px) {
+            .boards-container { flex-direction: column; gap: 15px; }
+            .main-header { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        BERLIN BRANDENBURG AIRPORT (BER)
-        <span class="live-dot"></span>
-        LIVE <span id="liveTime"></span>
-        <span class="live-dot"></span>
-    </div>
-    
-    <div class="container">
-        <!-- DEPARTURES -->
-        <div class="panel departures">
-            <div class="panel-header">DEPARTURES</div>
-            <div class="scanline"></div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>TIME</th>
-                        <th>FLIGHT</th>
-                        <th>DESTINATION</th>
-                        <th>STATUS</th>
-                    </tr>
-                </thead>
-                <tbody id="departures"></tbody>
-            </table>
-        </div>
-        
-        <!-- ARRIVALS -->
-        <div class="panel arrivals">
-            <div class="panel-header">ARRIVALS</div>
-            <div class="scanline"></div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>TIME</th>
-                        <th>FLIGHT</th>
-                        <th>ORIGIN</th>
-                        <th>STATUS</th>
-                    </tr>
-                </thead>
-                <tbody id="arrivals"></tbody>
-            </table>
+    <div class="screen-frame">
+        <div class="led-screen">
+            <div class="main-header" id="airportName">Loading Airport...</div>
+            <div class="airport-code" id="airportCode">-</div>
+            
+            <div class="boards-container">
+                <!-- DEPARTURES -->
+                <div class="board departures">
+                    <div class="board-header">DEPARTURES</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TIME</th>
+                                <th>FLIGHT</th>
+                                <th>TO</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departuresBody">
+                            <tr><td colspan="4" class="loading">Loading live flights...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- ARRIVALS -->
+                <div class="board arrivals">
+                    <div class="board-header">ARRIVALS</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TIME</th>
+                                <th>FLIGHT</th>
+                                <th>FROM</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="arrivalsBody">
+                            <tr><td colspan="4" class="loading">Loading live flights...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="status-bar" id="statusBar">
+                <span id="statusText">Connecting to AirLabs API...</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // РЕАЛИСТИЧНЫЕ РЕЙСЫ БЕРЛИНА (10+10)
-        const berlinTraffic = {
-            departures: [
-                {flight: 'LH201', time: '16:50', dest: 'FRA Frankfurt', status: 'On Time'},
-                {flight: 'TK1752', time: '17:00', dest: 'IST Istanbul', status: 'Delayed +18'},
-                {flight: 'U25340', time: '17:10', dest: 'STR Stuttgart', status: 'Boarding'},
-                {flight: 'FR677', time: '17:20', dest: 'BGY Milan Bergamo', status: 'Check-in'},
-                {flight: 'LG3201', time: '17:30', dest: 'MUC Munich', status: 'On Time'},
-                {flight: 'KL1965', time: '17:45', dest: 'AMS Amsterdam', status: 'Boarding'},
-                {flight: 'BA845', time: '18:00', dest: 'LHR London Heathrow', status: 'On Time'},
-                {flight: 'W62457', time: '18:15', dest: 'GDN Gdansk', status: 'Delayed +12'},
-                {flight: 'CA845', time: '18:30', dest: 'PEK Beijing', status: 'Check-in'},
-                {flight: 'EW4015', time: '18:45', dest: 'DUS Düsseldorf', status: 'On Time'},
-                {flight: 'OG5301', time: '19:00', dest: 'VIE Vienna', status: 'Boarding'}
-            ],
-            arrivals: [
-                {flight: 'LH202', time: '16:45', origin: 'FRA Frankfurt', status: 'Landed'},
-                {flight: 'TK1751', time: '16:55', origin: 'IST Istanbul', status: 'Landing'},
-                {flight: 'U25341', time: '17:05', origin: 'STR Stuttgart', status: 'Landed'},
-                {flight: 'FR678', time: '17:15', origin: 'BGY Milan Bergamo', status: 'On Time'},
-                {flight: 'LG3202', time: '17:25', origin: 'MUC Munich', status: 'Landed'},
-                {flight: 'KL1966', time: '17:40', origin: 'AMS Amsterdam', status: 'Landing'},
-                {flight: 'BA846', time: '17:55', origin: 'LHR London Heathrow', status: 'Landed'},
-                {flight: 'W62458', time: '18:10', origin: 'GDN Gdansk', status: 'On Time'},
-                {flight: 'CA846', time: '18:25', origin: 'PEK Beijing', status: 'Landing'},
-                {flight: 'EW4016', time: '18:40', origin: 'DUS Düsseldorf', status: 'Landed'},
-                {flight: 'OG5302', time: '18:55', origin: 'VIE Vienna', status: 'On Time'}
-            ]
-        };
+        const API_KEY = 'b678f9df-013d-46f0-b536-d5a8be6a3428';
+        const statusEl = document.getElementById('statusText');
+        const departuresBody = document.getElementById('departuresBody');
+        const arrivalsBody = document.getElementById('arrivalsBody');
         
-        function renderTable(containerId, flights) {
-            const tbody = document.getElementById(containerId);
+        // CORS Proxy для AirLabs
+        const PROXY_URL = 'https://api.allorigins.win/get?url=';
+        const API_URL = `https://airlabs.co/api/v9/flights?api_key=${API_KEY}`;
+        
+        async function fetchLiveFlights() {
+            try {
+                statusEl.textContent = 'Fetching live flights...';
+                
+                const proxyResponse = await fetch(PROXY_URL + encodeURIComponent(API_URL));
+                const proxyData = await proxyResponse.json();
+                const data = JSON.parse(proxyData.contents);
+                
+                if (data.response_code === 200 && data.response && data.response.length > 0) {
+                    processFlights(data.response);
+                    return true;
+                } else {
+                    throw new Error('No flight data received');
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                statusEl.textContent = 'Using demo data (CORS/API limit)';
+                loadDemoFlights();
+                return false;
+            }
+        }
+        
+        function processFlights(flights) {
+            // Группируем по аэропортам для выбора самого активного
+            const airportStats = {};
+            
+            flights.forEach(flight => {
+                const dep = flight.dep_iata;
+                const arr = flight.arr_iata;
+                
+                if (!airportStats[dep]) airportStats[dep] = { departures: 0, arrivals: 0 };
+                if (!airportStats[arr]) airportStats[arr] = { departures: 0, arrivals: 0 };
+                
+                if (dep) airportStats[dep].departures++;
+                if (arr) airportStats[arr].arrivals++;
+            });
+            
+            // Находим самый активный аэропорт
+            const busiestAirport = Object.entries(airportStats)
+                .reduce((a, b) => (a[1].departures + a[1].arrivals > b[1].departures + b[1].arrivals ? a : b))[0];
+            
+            const airportName = getAirportName(busiestAirport);
+            document.getElementById('airportName').textContent = airportName;
+            document.getElementById('airportCode').textContent = busiestAirport;
+            
+            // Фильтруем рейсы по самому активному аэропорту
+            const departures = flights
+                .filter(f => f.dep_iata === busiestAirport)
+                .slice(0, 10)
+                .map(f => formatFlight(f, 'departure'));
+            
+            const arrivals = flights
+                .filter(f => f.arr_iata === busiestAirport)
+                .slice(0, 10)
+                .map(f => formatFlight(f, 'arrival'));
+            
+            renderTable(departuresBody, departures);
+            renderTable(arrivalsBody, arrivals);
+            
+            statusEl.textContent = `Live: ${busiestAirport} | Updated ${new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}`;
+        }
+        
+        function formatFlight(flight, type) {
+            const time = flight.updated ? new Date(flight.updated * 1000).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) : '--:--';
+            const flightNumber = flight.flight_iata || flight.flight_icao || 'N/A';
+            const city = type === 'departure' ? (flight.arr_iata || 'N/A') : (flight.dep_iata || 'N/A');
+            const statusText = getStatusText(flight.status || 'unknown');
+            
+            return { time, flightNumber, city, statusText };
+        }
+        
+        function getStatusText(status) {
+            const statusMap = {
+                'scheduled': 'Scheduled',
+                'active': 'On Time', 
+                'landed': 'Landed',
+                'unknown': 'On Time'
+            };
+            return statusMap[status] || 'On Time';
+        }
+        
+        function getStatusClass(statusText) {
+            if (statusText === 'Scheduled') return 'scheduled';
+            if (statusText === 'Landed') return 'landed';
+            if (statusText.includes('Delayed')) return 'delayed';
+            return 'ontime';
+        }
+        
+        function getAirportName(code) {
+            const airports = {
+                'JFK': 'New York JFK',
+                'LHR': 'London Heathrow', 
+                'LAX': 'Los Angeles',
+                'CDG': 'Paris Charles de Gaulle',
+                'DXB': 'Dubai',
+                'BER': 'Berlin Brandenburg',
+                'SVO': 'Moscow Sheremetyevo',
+                'PEK': 'Beijing Capital',
+                'NRT': 'Tokyo Narita'
+            };
+            return airports[code] || `${code} Airport`;
+        }
+        
+        function renderTable(tbody, flights) {
             tbody.innerHTML = '';
             
-            flights.slice(0, 10).forEach(flight => {
+            if (flights.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="loading">No flights</td></tr>';
+                return;
+            }
+            
+            flights.forEach(flight => {
                 const row = document.createElement('tr');
-                const statusClass = getStatusClass(flight.status);
-                
                 row.innerHTML = `
                     <td class="time">${flight.time}</td>
-                    <td class="flight">${flight.flight}</td>
-                    <td class="city">${flight.dest || flight.origin}</td>
-                    <td class="status ${statusClass}">${flight.status}</td>
+                    <td class="flight">${flight.flightNumber}</td>
+                    <td class="city">${flight.city}</td>
+                    <td class="status ${getStatusClass(flight.statusText)}">${flight.statusText}</td>
                 `;
                 tbody.appendChild(row);
             });
         }
         
-        function getStatusClass(status) {
-            if (status.includes('On Time') || status.includes('Landed')) return 'on-time';
-            if (status.includes('Delayed')) return 'delayed';
-            if (status.includes('Boarding') || status.includes('Check-in') || status.includes('Landing')) return 'boarding';
-            return 'on-time';
-        }
-        
-        function updateLiveTime() {
-            document.getElementById('liveTime').textContent = 
-                new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
-        }
-        
-        function simulateLiveUpdates() {
-            // Реалистичные изменения статусов
-            [berlinTraffic.departures, berlinTraffic.arrivals].forEach(list => {
-                list.slice(0, 4).forEach(flight => {
-                    if (Math.random() < 0.25) {
-                        const statuses = [
-                            'On Time', 'Delayed +15', 'Delayed +28', 
-                            'Boarding', 'Check-in', 'Landing', 'Landed'
-                        ];
-                        flight.status = statuses[Math.floor(Math.random() * statuses.length)];
-                    }
-                });
-            });
+        function loadDemoFlights() {
+            document.getElementById('airportName').textContent = 'John F. Kennedy';
+            document.getElementById('airportCode').textContent = 'JFK';
             
-            renderTable('departures', berlinTraffic.departures);
-            renderTable('arrivals', berlinTraffic.arrivals);
-            updateLiveTime();
+            const demoDepartures = [
+                {time: '17:45', flightNumber: 'AA101', city: 'LAX', statusText: 'On Time'},
+                {time: '18:00', flightNumber: 'DL222', city: 'ATL', statusText: 'Delayed'},
+                {time: '18:15', flightNumber: 'UA567', city: 'ORD', statusText: 'On Time'}
+            ];
+            
+            const demoArrivals = [
+                {time: '17:30', flightNumber: 'BA123', city: 'LHR', statusText: 'Landed'},
+                {time: '17:50', flightNumber: 'AF456', city: 'CDG', statusText: 'On Time'},
+                {time: '18:10', flightNumber: 'LX789', city: 'ZUR', statusText: 'Landed'}
+            ];
+            
+            renderTable(departuresBody, demoDepartures);
+            renderTable(arrivalsBody, demoArrivals);
         }
         
         // Инициализация
         window.addEventListener('load', () => {
-            renderTable('departures', berlinTraffic.departures);
-            renderTable('arrivals', berlinTraffic.arrivals);
-            updateLiveTime();
-            
-            // Live обновления каждые 20 секунд
-            setInterval(simulateLiveUpdates, 20000);
+            fetchLiveFlights();
+            // Обновление каждые 5 минут
+            setInterval(fetchLiveFlights, 300000);
         });
-        
-        // Обновление времени каждую минуту
-        setInterval(updateLiveTime, 60000);
     </script>
 </body>
 </html>
