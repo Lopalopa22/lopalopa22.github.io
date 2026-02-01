@@ -71,8 +71,7 @@
     
     async function loadDepartures() {
       try {
-        // ЖИВЫЕ рейсы ближайшие 4 часа
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=20&flight_status=all&access_key=${API_KEY}`);
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=20&access_key=${API_KEY}`);
         const data = await res.json();
         updateTable('departures', data.data, 'departure');
       } catch(e) { console.error('Вылеты:', e); }
@@ -80,8 +79,7 @@
     
     async function loadArrivals() {
       try {
-        // ЖИВЫЕ рейсы ближайшие 4 часа  
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=20&flight_status=all&access_key=${API_KEY}`);
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=20&access_key=${API_KEY}`);
         const data = await res.json();
         updateTable('arrivals', data.data, 'arrival');
       } catch(e) { console.error('Прилёты:', e); }
@@ -92,28 +90,22 @@
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
       
-      // ФИЛЬТР: только ближайшие 4 часа + ТОЛЬКО 5 рейсов
-      const now = new Date();
-      const filteredFlights = flights
-        .filter(flight => {
-          const flightTime = new Date(flight[type]?.scheduled);
-          const diff = (flightTime - now) / (1000 * 60 * 60); // часы
-          return diff > -1 && diff < 4; // ±1 час от сейчас
-        })
-        .slice(0, 5); // ТОЛЬКО 5!
-      
-      filteredFlights.forEach(flight => {
+      // БЕРЁМ ПЕРВЫЕ 5 рейсов (БЕЗ фильтра времени!)
+      flights.slice(0, 5).forEach(flight => {
         const status = (flight.flight_status || 'scheduled').toLowerCase();
         const statusClass = status.includes('active') ? 'active' : 
                            status.includes('delay') || status.includes('late') ? 'delayed' : 
                            status.includes('cancel') ? 'cancelled' : 'scheduled';
         
         // ВРЕМЯ МСК
-        const flightTime = new Date(flight[type]?.scheduled).toLocaleTimeString('ru-RU', {
-          timeZone: 'Europe/Moscow',
-          hour: '2-digit', 
-          minute: '2-digit'
-        });
+        let flightTime = '—';
+        try {
+          flightTime = new Date(flight[type]?.scheduled).toLocaleTimeString('ru-RU', {
+            timeZone: 'Europe/Moscow',
+            hour: '2-digit', 
+            minute: '2-digit'
+          });
+        } catch(e) {}
         
         const city = (type === 'departure' ? flight.arrival?.airport : flight.departure?.airport || 'N/A')
           .replace(' International Airport', '').replace(' Airport', '').replace(' Intl', '');
@@ -129,7 +121,7 @@
       });
     }
     
-    // Запуск и обновление каждые 60 сек
+    // Запуск и обновление
     loadDepartures();
     loadArrivals();
     setInterval(() => { loadDepartures(); loadArrivals(); }, 60000);
