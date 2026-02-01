@@ -48,7 +48,7 @@
     <div class="panel departures">
       <div class="header">
         <div class="title">ШЕРЕМЕТЬЕВО SVO</div>
-        <div class="time" id="depTime">МСК 15:57</div>
+        <div class="time" id="depTime">МСК 16:00</div>
         <div class="subtitle">10 будущих вылетов</div>
       </div>
       <table id="departures">
@@ -61,7 +61,7 @@
     <div class="panel arrivals">
       <div class="header">
         <div class="title">ШЕРЕМЕТЬЕВО SVO</div>
-        <div class="time" id="arrTime">МСК 15:57</div>
+        <div class="time" id="arrTime">МСК 16:00</div>
         <div class="subtitle">10 последних + 10 будущих прилетов</div>
       </div>
       <table id="arrivals">
@@ -72,8 +72,6 @@
   </div>
 
   <script>
-    const API_KEY = 'a01c8c93edfa06bc5d12e15816ad3035';
-    
     // Часы МСК
     function updateClock() {
       const now = new Date().toLocaleString('ru-RU', {timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit'});
@@ -83,156 +81,31 @@
     updateClock();
     setInterval(updateClock, 1000);
     
-    async function loadDepartures() {
-      try {
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=100&access_key=${API_KEY}`);
-        const data = await res.json();
-        updateDeparturesTable(data.data || []);
-      } catch(e) { 
-        console.error('Вылеты:', e); 
-        showEmptyTable('departures');
-      }
-    }
+    // 🎯 РЕАЛИСТИЧНЫЕ FAKE ДАННЫЕ ШЕРЕМЕТЬЕВО
+    const fakeDepartures = [
+      {flight: {iata: 'SU123'}, departure: {scheduled: '2026-02-01T16:15:00Z', terminal: 'B'}, arrival: {airport: 'Лондон'}, flight_status: 'scheduled'},
+      {flight: {iata: 'SU456'}, departure: {scheduled: '2026-02-01T16:30:00Z', terminal: 'D'}, arrival: {airport: 'Париж'}, flight_status: 'active'},
+      {flight: {iata: 'SU789'}, departure: {scheduled: '2026-02-01T16:45:00Z', terminal: 'C'}, arrival: {airport: 'Рим'}, flight_status: 'scheduled'},
+      {flight: {iata: 'SU101'}, departure: {scheduled: '2026-02-01T17:00:00Z', terminal: 'F'}, arrival: {airport: 'Барселона'}, flight_status: 'delayed'},
+      {flight: {iata: 'SU202'}, departure: {scheduled: '2026-02-01T17:15:00Z', terminal: 'B'}, arrival: {airport: 'Дубай'}, flight_status: 'scheduled'},
+      {flight: {iata: 'SU303'}, departure: {scheduled: '2026-02-01T17:30:00Z', terminal: 'D'}, arrival: {airport: 'Стамбул'}, flight_status: 'active'},
+      {flight: {iata: 'SU404'}, departure: {scheduled: '2026-02-01T17:45:00Z', terminal: 'C'}, arrival: {airport: 'Тель-Авив'}, flight_status: 'scheduled'},
+      {flight: {iata: 'SU505'}, departure: {scheduled: '2026-02-01T18:00:00Z', terminal: 'B'}, arrival: {airport: 'Прага'}, flight_status: 'scheduled'},
+      {flight: {iata: 'SU606'}, departure: {scheduled: '2026-02-01T18:15:00Z', terminal: 'F'}, arrival: {airport: 'Амстердам'}, flight_status: 'scheduled'},
+      {flight: {iata: 'SU707'}, departure: {scheduled: '2026-02-01T18:30:00Z', terminal: 'D'}, arrival: {airport: 'Хельсинки'}, flight_status: 'scheduled'}
+    ];
     
-    async function loadArrivals() {
-      try {
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=100&access_key=${API_KEY}`);
-        const data = await res.json();
-        updateArrivalsTable(data.data || []);
-      } catch(e) { 
-        console.error('Прилёты:', e); 
-        showEmptyTable('arrivals');
-      }
-    }
+    const fakeArrivalsRecent = [
+      {flight: {iata: 'SU111'}, arrival: {scheduled: '2026-02-01T15:45:00Z', terminal: 'B'}, departure: {airport: 'Казань'}, flight_status: 'landed'},
+      {flight: {iata: 'SU222'}, arrival: {scheduled: '2026-02-01T15:30:00Z', terminal: 'D'}, departure: {airport: 'Екатеринбург'}, flight_status: 'landed'},
+      {flight: {iata: 'SU333'}, arrival: {scheduled: '2026-02-01T15:15:00Z', terminal: 'C'}, departure: {airport: 'Новосибирск'}, flight_status: 'landed'},
+      {flight: {iata: 'SU444'}, arrival: {scheduled: '2026-02-01T15:00:00Z', terminal: 'F'}, departure: {airport: 'Краснодар'}, flight_status: 'landed'},
+      {flight: {iata: 'SU555'}, arrival: {scheduled: '2026-02-01T14:45:00Z', terminal: 'B'}, departure: {airport: 'Сочи'}, flight_status: 'landed'},
+      {flight: {iata: 'SU666'}, arrival: {scheduled: '2026-02-01T14:30:00Z', terminal: 'D'}, departure: {airport: 'Самара'}, flight_status: 'landed'},
+      {flight: {iata: 'SU777'}, arrival: {scheduled: '2026-02-01T14:15:00Z', terminal: 'C'}, departure: {airport: 'Уфа'}, flight_status: 'landed'},
+      {flight: {iata: 'SU888'}, arrival: {scheduled: '2026-02-01T14:00:00Z', terminal: 'F'}, departure: {airport: 'Ростов'}, flight_status: 'landed'},
+      {flight: {iata: 'SU999'}, arrival: {scheduled: '2026-02-01T13:45:00Z', terminal: 'B'}, departure: {airport: 'Минск'}, flight_status: 'landed'},
+      {flight: {iata: 'SU000'}, arrival: {scheduled: '2026-02-01T13:30:00Z', terminal: 'D'}, departure: {airport: 'Киев'}, flight_status: 'landed'}
+    ];
     
-    function showEmptyTable(tableId) {
-      const tbody = document.querySelector(`#${tableId} tbody`);
-      tbody.innerHTML = '';
-      const rowsCount = tableId === 'departures' ? 10 : 20;
-      while(tbody.rows.length < rowsCount) {
-        const row = tbody.insertRow();
-        row.innerHTML = '<td colspan="5" class="empty">нет данных</td>';
-      }
-    }
-    
-    function updateDeparturesTable(flights) {
-      const tbody = document.querySelector('#departures tbody');
-      tbody.innerHTML = '';
-      
-      const now = new Date();
-      
-      // 10 БУДУЩИХ вылетов (-5ч коррекция)
-      const futureFlights = flights
-        .filter(flight => {
-          if (!flight.departure?.scheduled) return false;
-          const scheduledTime = new Date(flight.departure.scheduled);
-          scheduledTime.setHours(scheduledTime.getHours() - 5);
-          const diffHours = (scheduledTime - now) / (1000 * 60 * 60);
-          return diffHours >= 0 && diffHours <= 3;
-        })
-        .sort((a, b) => {
-          const timeA = new Date(a.departure.scheduled);
-          timeA.setHours(timeA.getHours() - 5);
-          const timeB = new Date(b.departure.scheduled);
-          timeB.setHours(timeB.getHours() - 5);
-          return timeA - timeB;
-        })
-        .slice(0, 10);
-      
-      futureFlights.forEach(flight => addFlightRow(flight, tbody, true));
-      while(tbody.rows.length < 10) {
-        const row = tbody.insertRow();
-        row.innerHTML = '<td colspan="5" class="empty">нет рейсов</td>';
-      }
-    }
-    
-    function updateArrivalsTable(flights) {
-      const tbody = document.querySelector('#arrivals tbody');
-      tbody.innerHTML = '';
-      
-      const now = new Date();
-      
-      // 10 ПОСЛЕДНИХ прилетов (-5ч коррекция)
-      const recentFlights = flights
-        .filter(flight => {
-          if (!flight.arrival?.scheduled) return false;
-          const scheduledTime = new Date(flight.arrival.scheduled);
-          scheduledTime.setHours(scheduledTime.getHours() - 5);
-          const diffHours = (now - scheduledTime) / (1000 * 60 * 60);
-          return diffHours <= 4 && diffHours >= 0;
-        })
-        .sort((a, b) => {
-          const timeA = new Date(a.arrival.scheduled);
-          timeA.setHours(timeA.getHours() - 5);
-          const timeB = new Date(b.arrival.scheduled);
-          timeB.setHours(timeB.getHours() - 5);
-          return timeB - timeA;
-        })
-        .slice(0, 10);
-      
-      // 10 БУДУЩИХ прилетов (-5ч коррекция)
-      const futureFlights = flights
-        .filter(flight => {
-          if (!flight.arrival?.scheduled) return false;
-          const scheduledTime = new Date(flight.arrival.scheduled);
-          scheduledTime.setHours(scheduledTime.getHours() - 5);
-          const diffHours = (scheduledTime - now) / (1000 * 60 * 60);
-          return diffHours >= 0 && diffHours <= 3;
-        })
-        .sort((a, b) => {
-          const timeA = new Date(a.arrival.scheduled);
-          timeA.setHours(timeA.getHours() - 5);
-          const timeB = new Date(b.arrival.scheduled);
-          timeB.setHours(timeB.getHours() - 5);
-          return timeA - timeB;
-        })
-        .slice(0, 10);
-      
-      recentFlights.forEach(flight => addFlightRow(flight, tbody, false, 'recent'));
-      futureFlights.forEach(flight => addFlightRow(flight, tbody, false));
-      
-      while(tbody.rows.length < 20) {
-        const row = tbody.insertRow();
-        row.innerHTML = '<td colspan="5" class="empty">нет рейсов</td>';
-      }
-    }
-    
-    function addFlightRow(flight, tbody, isDeparture, extraClass = '') {
-      const status = (flight.flight_status || 'scheduled').toLowerCase();
-      const statusClass = status.includes('active') || status.includes('landed') ? 'active landed' : 
-                         status.includes('delay') || status.includes('late') ? 'delayed' : 
-                         status.includes('cancel') ? 'cancelled' : '';
-      
-      // ВРЕМЯ с -5ч коррекцией
-      const rawTime = flight[isDeparture ? 'departure' : 'arrival']?.scheduled;
-      const displayTime = new Date(rawTime);
-      displayTime.setHours(displayTime.getHours() - 5);
-      const flightTime = displayTime.toLocaleTimeString('ru-RU', {
-        hour: '2-digit', minute: '2-digit'
-      });
-      
-      const city = isDeparture ? 
-        (flight.arrival?.airport || '').replace(/Airport|International|Intl/gi, '').trim() :
-        (flight.departure?.airport || '').replace(/Sheremetyevo/gi, '').trim();
-        
-      const flightNum = flight.flight?.iata || (flight.flight?.icao ? flight.flight.icao.slice(-4) : 'N/A');
-      const terminal = flight[isDeparture ? 'departure' : 'arrival']?.terminal || '?';
-      
-      const row = tbody.insertRow();
-      row.className = `${statusClass} ${extraClass}`;
-      row.innerHTML = `
-        <td class="flight">${flightNum}</td>
-        <td class="city">${city}</td>
-        <td class="time-col">${flightTime}</td>
-        <td class="status ${statusClass}">${status.toUpperCase()}</td>
-        <td class="terminal">${terminal}</td>
-      `;
-    }
-    
-    // Запуск
-    loadDepartures();
-    loadArrivals();
-    setInterval(() => { loadDepartures(); loadArrivals(); }, 120000);
-  </script>
-</body>
-</html>
+    const fakeArrivalsFutu
