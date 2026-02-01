@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+body { margin: 0; font-family: 'Courier New', monospace; background: #000; color: #0f0; font-size: 3vw; overflow: hidden; }
+table { width: 90%; border-collapse: collapse; }
+th, td { padding: 10px; text-align: center; border-bottom: 1px solid #333; }
+.status { color: #ff0; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+h1 { text-align: center; font-size: 5vw; margin: 10px; }
+</style>
+</head>
+<body>
+<h1>Вылеты / Прилёты — SVO</h1>
+<table id="flights">
+<tr><th>Рейс</th><th>Время</th><th>Статус</th><th>Город</th></tr>
+</table>
+<script>
+async function loadFlights() {
+try {
+const res = await fetch('https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=20&access_key=a01c8c93edfa06bc5d12e15816ad3035');
+const data = await res.json();
+const table = document.getElementById('flights');
+table.innerHTML = '<tr><th>Рейс</th><th>Время</th><th>Статус</th><th>Город</th></tr>';
+data.data.slice(0,15).forEach(flight => {
+const row = table.insertRow();
+row.innerHTML = `<td>${flight.flight.iata}</td><td>${flight.departure.scheduled}</td><td class="status">${flight.flight_status}</td><td>${flight.departure.airport}</td>`;
+});
+} catch(e) { console.log('Ошибка загрузки'); }
+}
+loadFlights(); // Первая загрузка
+setInterval(loadFlights, 60000); // Обновление каждую минуту
+</script>
+</body>
+</html>
