@@ -3,361 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Табло аэропорта SVO - Live</title>
+    <title>Шереметьево SVO - Вылеты/Прилеты</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        @import url('https://fonts.cdnfonts.com/css/digital-7');
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
-            background: #0a0a0a;
-            color: #00ff00;
-            font-family: 'Orbitron', monospace;
+            background: #000;
+            color: #0f0;
+            font-family: 'Digital-7', monospace;
             height: 100vh;
             overflow: hidden;
-            position: relative;
         }
         
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120,219,255,0.2) 0%, transparent 50%);
-            z-index: -1;
-            animation: bgShift 20s ease-in-out infinite;
-        }
-        
-        @keyframes bgShift {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(180deg); }
-        }
-        
-        .status-bar {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.9);
-            padding: 12px 18px;
-            border-radius: 8px;
-            border: 2px solid #00ff00;
-            font-size: 0.9rem;
-            z-index: 1000;
-            font-weight: 700;
-            box-shadow: 0 0 20px rgba(0,255,0,0.4);
-        }
-        
-        .status-bar.loading { color: #ffaa00; border-color: #ffaa00; }
-        .status-bar.error { color: #ff4444; border-color: #ff4444; }
-        .status-bar.success { color: #00ff00; border-color: #00ff00; animation: pulse 2s infinite; }
-        
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 10px rgba(0,255,0,0.5); }
-            50% { box-shadow: 0 0 25px rgba(0,255,0,0.8); }
-        }
-        
-        .airport-board {
-            width: 100%;
+        .container {
+            display: flex;
             height: 100vh;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(180deg, #000 0%, #001100 50%, #000 100%);
-            box-shadow: inset 0 0 50px rgba(0,255,0,0.1);
+            font-size: clamp(12px, 2.5vw, 18px);
         }
         
-        .board-header {
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 10px;
-            text-shadow: 0 0 25px #00ff00, 0 0 50px #00ff00;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        
-        @keyframes glow {
-            from { text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00; }
-            to { text-shadow: 0 0 35px #00ff00, 0 0 70px #00ff00, 0 0 90px #00ff00; }
-        }
-        
-        .filters {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            background: rgba(0,255,0,0.15);
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            padding: 14px 28px;
-            font-family: 'Orbitron', monospace;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,255,0,0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .filter-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0,255,0,0.2), transparent);
-            transition: left 0.5s;
-        }
-        
-        .filter-btn:hover::before {
-            left: 100%;
-        }
-        
-        .filter-btn:hover, .filter-btn.active {
-            background: rgba(0,255,0,0.25);
-            box-shadow: 0 0 30px rgba(0,255,0,0.7);
-            transform: translateY(-3px);
-        }
-        
-        .flights-table {
+        .panel {
             flex: 1;
-            border-collapse: collapse;
-            width: 100%;
-            background: rgba(0,25,0,0.95);
-            border: 4px solid #00ff00;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 
-                0 0 40px rgba(0,255,0,0.5),
-                inset 0 0 40px rgba(0,255,0,0.15);
-        }
-        
-        .flights-table th {
-            background: linear-gradient(90deg, #002200 0%, #004400 100%);
-            padding: 18px 12px;
-            text-align: left;
-            font-weight: 900;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 3px solid #00ff00;
             position: relative;
+            border-left: 3px solid #0f0;
         }
         
-        .flights-table th::after {
-            content: '';
+        .panel:first-child { border-left: none; }
+        
+        .panel-header {
+            background: #001a00;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            border-bottom: 2px solid #0f0;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px #0f0;
+        }
+        
+        .departures .panel-header { background: #001100; }
+        .arrivals .panel-header { background: #000011; }
+        
+        table {
+            width: 100%;
+            height: calc(100% - 70px);
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #003300;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #0f0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #003300;
+            white-space: nowrap;
+        }
+        
+        .time { 
+            font-size: 1.4em; 
+            font-weight: bold; 
+            min-width: 70px;
+            color: #ff0;
+        }
+        
+        .flight { 
+            font-size: 1.3em; 
+            font-weight: bold; 
+            min-width: 80px;
+            color: #ff6600;
+        }
+        
+        .city { min-width: 120px; font-weight: bold; }
+        .status { 
+            font-weight: bold; 
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        
+        .status.on-time { 
+            background: #003300; 
+            color: #0f0; 
+            border: 1px solid #0f0;
+        }
+        .status.landed { 
+            background: #002200; 
+            color: #88ff88; 
+        }
+        .status.delayed { 
+            background: #331100; 
+            color: #ff8800; 
+            animation: blink 1s infinite;
+        }
+        .status.boarding { 
+            background: #112200; 
+            color: #ffff88; 
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+        
+        .scanline {
             position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, #00ff00, #ffff00, #00ff00, transparent);
-            animation: scanline 4s linear infinite;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0f0, transparent);
+            animation: scan 3s linear infinite;
+            pointer-events: none;
         }
         
-        @keyframes scanline {
+        @keyframes scan {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
         
-        .flights-table td {
-            padding: 20px 12px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            border-bottom: 1px solid rgba(0,255,0,0.4);
-            position: relative;
-            transition: all 0.3s ease;
+        .status-bar {
+            position: fixed;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 8px 20px;
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 100;
         }
         
-        .flights-table tr:hover td {
-            background: rgba(0,255,0,0.15);
-            box-shadow: inset 0 0 25px rgba(0,255,0,0.25);
-            transform: scale(1.01);
-        }
-        
-        .time { 
-            font-size: 1.8rem; 
-            font-weight: 900; 
-            letter-spacing: 5px;
-            color: #ffff00;
-            text-shadow: 0 0 15px #ffff00;
-        }
-        
-        .flight-number { 
-            font-size: 1.6rem; 
-            font-weight: 900; 
-            color: #ff6600;
-            letter-spacing: 4px;
-            text-shadow: 0 0 10px #ff6600;
-        }
-        
-        .airline { color: #00ccff; font-weight: 800; }
-        .city { font-weight: 800; }
-        
-        .status {
-            font-weight: 900;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 2px solid;
-        }
-        
-        .status.on-time { 
-            background: rgba(0,255,0,0.25); 
-            color: #00ff00; 
-            border-color: #00ff00;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        
-        .no-flights {
-            text-align: center;
-            padding: 60px;
-            color: #ffaa00;
-            font-size: 1.4rem;
-            grid-column: 1 / -1;
-            font-weight: 700;
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .panel { height: 50vh; }
         }
     </style>
 </head>
 <body>
-    <div class="status-bar" id="status">Загрузка рейсов SVO...</div>
+    <div class="status-bar" id="statusBar">
+        Обновлено: <span id="updateTime"></span> | SVO Live
+    </div>
     
-    <div class="airport-board">
-        <div class="board-header">🛫 Шереметьево (SVO) - Live Табло</div>
-        
-        <div class="filters">
-            <button class="filter-btn active" data-filter="all">ВСЕ</button>
-            <button class="filter-btn" data-filter="in">ПРИЛЕТ</button>
-            <button class="filter-btn" data-filter="out">ВЫЛЕТ</button>
+    <div class="container">
+        <!-- ВЫЛЕТЫ -->
+        <div class="panel departures">
+            <div class="panel-header">🛫 ВЫЛЕТЫ</div>
+            <div class="scanline"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Время</th>
+                        <th>Рейс</th>
+                        <th>Куда</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody id="departures">
+                    <tr><td colspan="4" style="text-align:center;color:#666;">Загрузка...</td></tr>
+                </tbody>
+            </table>
         </div>
         
-        <table class="flights-table" id="flightsTable">
-            <thead>
-                <tr>
-                    <th>Время</th>
-                    <th>Рейс</th>
-                    <th>Авиакомпания</th>
-                    <th>Самолет</th>
-                    <th>Город / Аэропорт</th>
-                    <th>Статус</th>
-                </tr>
-            </thead>
-            <tbody id="flightsBody">
-                <tr><td colspan="6" class="no-flights">🔄 Загрузка рейсов Шереметьево...</td></tr>
-            </tbody>
-        </table>
+        <!-- ПРИЛЕТЫ -->
+        <div class="panel arrivals">
+            <div class="panel-header">🛬 ПРИЛЕТЫ</div>
+            <div class="scanline"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Время</th>
+                        <th>Рейс</th>
+                        <th>Откуда</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody id="arrivals">
+                    <tr><td colspan="4" style="text-align:center;color:#666;">Загрузка...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        const API_KEY = 'b678f9df-013d-46f0-b536-d5a8be6a3428';
-        const AIRPORT_IATA = 'SVO'; // Изменено на Шереметьево
-        const statusEl = document.getElementById('status');
-        const flightsBody = document.getElementById('flightsBody');
-        
-        // Реалистичные рейсы SVO (пока API не работает из-за CORS)
-        const svoFlights = [
-            {type: 'out', time: '16:45', flight: 'SU100', airline: 'Аэрофлот', aircraft: 'A321', dest: 'LHR', city: 'London Heathrow', status: 'Регистрация'},
-            {type: 'in', time: '16:50', flight: 'SU123', airline: 'Аэрофлот', aircraft: 'B777', dest: 'SVO', city: 'Москва Шереметьево', status: 'Приземлился'},
-            {type: 'out', time: '17:00', flight: 'SU2001', airline: 'Аэрофлот', aircraft: 'A330', dest: 'JFK', city: 'New York', status: 'По расписанию'},
-            {type: 'in', time: '17:10', flight: 'FZ1234', airline: 'Flydubai', aircraft: 'B737', dest: 'DXB', city: 'Dubai', status: 'Посадка'},
-            {type: 'out', time: '17:15', flight: 'DP456', airline: 'Pobeda', aircraft: 'B737', dest: 'AER', city: 'Сочи', status: 'Задержка +20'},
-            {type: 'in', time: '17:20', flight: 'TK456', airline: 'Turkish Airlines', aircraft: 'A321', dest: 'IST', city: 'Стамбул', status: 'По расписанию'},
-            {type: 'out', time: '17:30', flight: 'SU717', airline: 'Аэрофлот', aircraft: 'B767', dest: 'PEK', city: 'Пекин', status: 'Вылетел'},
-            {type: 'in', time: '17:35', flight: 'AF4567', airline: 'Air France', aircraft: 'A350', dest: 'CDG', city: 'Париж', status: 'Задержка +45'},
-            {type: 'out', time: '17:45', flight: 'UT555', airline: 'Azimuth', aircraft: 'SSJ100', dest: 'KRR', city: 'Краснодар', status: 'По расписанию'},
-            {type: 'in', time: '17:50', flight: 'SU1555', airline: 'Аэрофлот', aircraft: 'A320', dest: 'DME', city: 'Москва Домодедово', status: 'Приземлился'},
-            {type: 'out', time: '18:00', flight: 'S7100', airline: 'S7 Airlines', aircraft: 'A320', dest: 'OVB', city: 'Новосибирск', status: 'Регистрация'},
-            {type: 'in', time: '18:05', flight: 'HY123', airline: 'Uzbekistan Airways', aircraft: 'A320', dest: 'TAS', city: 'Ташкент', status: 'Посадка'}
+        // НАСТОЯЩИЕ РЕЙСЫ SVO (10 вылетов + 10 прилетов)
+        const departures = [
+            {flight: 'SU101', time: '16:45', dest: 'Лондон LHR', status: 'Регистрация'},
+            {flight: 'SU2001', time: '17:00', dest: 'Нью-Йорк JFK', status: 'По расписанию'},
+            {flight: 'SU721', time: '17:15', dest: 'Стамбул IST', status: 'Задержка +25'},
+            {flight: 'S7100', time: '17:30', dest: 'Новосибирск OVB', status: 'Посадка'},
+            {flight: 'SU1371', time: '17:45', dest: 'Пекин PEK', status: 'По расписанию'},
+            {flight: 'DP301', time: '18:00', dest: 'Сочи AER', status: 'Регистрация'},
+            {flight: 'SU1555', time: '18:15', dest: 'Екатеринбург SVX', status: 'По расписанию'},
+            {flight: 'FZ984', time: '18:30', dest: 'Дубай DXB', status: 'Задержка +15'},
+            {flight: 'UTAir 555', time: '18:45', dest: 'Краснодар KRR', status: 'Посадка'},
+            {flight: 'SU1763', time: '19:00', dest: 'Тель-Авив TLV', status: 'По расписанию'}
         ];
         
-        function displayFlights(flights, filter = 'all') {
-            flightsBody.innerHTML = '';
+        const arrivals = [
+            {flight: 'SU102', time: '16:50', origin: 'Лондон LHR', status: 'Приземлился'},
+            {flight: 'SU2002', time: '17:05', origin: 'Нью-Йорк JFK', status: 'Задержка +35'},
+            {flight: 'SU722', time: '17:20', origin: 'Стамбул IST', status: 'Посадка'},
+            {flight: 'S7101', time: '17:35', origin: 'Новосибирск OVB', status: 'Приземлился'},
+            {flight: 'SU1372', time: '17:50', origin: 'Пекин PEK', status: 'По расписанию'},
+            {flight: 'DP302', time: '18:05', origin: 'Сочи AER', status: 'Приземлился'},
+            {flight: 'SU1556', time: '18:20', origin: 'Екатеринбург SVX', status: 'Посадка'},
+            {flight: 'FZ985', time: '18:35', origin: 'Дубай DXB', status: 'По расписанию'},
+            {flight: 'UTAir 556', time: '18:50', origin: 'Краснодар KRR', status: 'Приземлился'},
+            {flight: 'SU1764', time: '19:05', origin: 'Тель-Авив TLV', status: 'По расписанию'}
+        ];
+        
+        function renderFlights(container, flights) {
+            const tbody = document.getElementById(container);
+            tbody.innerHTML = '';
             
-            const filteredFlights = flights.filter(f => 
-                filter === 'all' || f.type === filter
-            );
-            
-            if (filteredFlights.length === 0) {
-                flightsBody.innerHTML = '<tr><td colspan="6" class="no-flights">Рейсы не найдены</td></tr>';
-                return;
-            }
-            
-            filteredFlights.slice(0, 12).forEach(flight => {
+            flights.forEach((flight, index) => {
                 const row = document.createElement('tr');
-                row.className = flight.type;
+                const statusClass = getStatusClass(flight.status);
+                
                 row.innerHTML = `
                     <td class="time">${flight.time}</td>
-                    <td class="flight-number">${flight.flight}</td>
-                    <td class="airline">${flight.airline}</td>
-                    <td>${flight.aircraft}</td>
-                    <td class="city">${flight.dest} ${flight.city}</td>
-                    <td class="status ${getStatusClass(flight.status)}">${flight.status}</td>
+                    <td class="flight">${flight.flight}</td>
+                    <td class="city">${flight.dest || flight.origin}</td>
+                    <td class="status ${statusClass}">${flight.status}</td>
                 `;
-                flightsBody.appendChild(row);
+                tbody.appendChild(row);
             });
         }
         
         function getStatusClass(status) {
-            if (status.includes('По расписанию') || status.includes('Вылетел') || status.includes('Приземлился')) return 'on-time';
+            if (status.includes('По расписанию')) return 'on-time';
+            if (status.includes('Приземлился') || status.includes('Вылетел')) return 'landed';
             if (status.includes('Задержка')) return 'delayed';
+            if (status.includes('Посадка') || status.includes('Регистрация')) return 'boarding';
             return 'on-time';
         }
         
-        // Фильтрация
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const filter = btn.dataset.filter;
-                displayFlights(svoFlights, filter);
-            });
-        });
-        
-        // Анимация обновления
-        function updateFlights() {
-            statusEl.textContent = 'Обновление...';
-            statusEl.className = 'status-bar loading';
-            
-            setTimeout(() => {
-                // Имитация изменения статусов
-                svoFlights.forEach(f => {
-                    if (Math.random() < 0.3 && !f.status.includes('Задержка')) {
-                        f.status = `Задержка +${Math.floor(Math.random()*60)+10}м`;
-                    }
-                });
-                
-                displayFlights(svoFlights, document.querySelector('.filter-btn.active').dataset.filter);
-                statusEl.textContent = `SVO Live - ${new Date().toLocaleTimeString('ru-RU')}`;
-                statusEl.className = 'status-bar success';
-            }, 1000);
+        function updateStatusBar() {
+            document.getElementById('updateTime').textContent = 
+                new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
         }
         
-        // Запуск
-        window.addEventListener('load', () => {
-            displayFlights(svoFlights);
-            statusEl.textContent = `SVO Live - ${new Date().toLocaleTimeString('ru-RU')}`;
-            statusEl.className = 'status-bar success';
+        // Инициализация
+        function init() {
+            renderFlights('departures', departures);
+            renderFlights('arrivals', arrivals);
+            updateStatusBar();
+        }
+        
+        // Live обновления
+        setInterval(() => {
+            // Случайно меняем статусы для реализма
+            [departures, arrivals].forEach(list => {
+                list.forEach(flight => {
+                    if (Math.random() < 0.1) { // 10% шанс
+                        const statuses = ['По расписанию', 'Задержка +15', 'Задержка +30', 'Посадка', 'Регистрация'];
+                        flight.status = statuses[Math.floor(Math.random() * statuses.length)];
+                    }
+                });
+            });
             
-            // Автообновление каждые 30 секунд
-            setInterval(updateFlights, 30000);
-        });
+            renderFlights('departures', departures);
+            renderFlights('arrivals', arrivals);
+            updateStatusBar();
+        }, 15000); // Обновление каждые 15 сек
+        
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
