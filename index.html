@@ -1,225 +1,424 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Courier New', monospace; 
-      background: #000; 
-      color: #fff; 
-      font-size: 1.6vh; 
-      height: 100vh; 
-      overflow: hidden;
-    }
-    
-    .container { display: flex; height: 100vh; font-weight: bold; }
-    .panel { flex: 1; padding: 15px; overflow: hidden; }
-    .departures { background: linear-gradient(180deg, #0a0a1a 0%, #1a1a2a 100%); border-right: 2px solid #fff; }
-    .arrivals { background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%); }
-    
-    .header { text-align: center; font-size: 3vh; color: #fff; margin-bottom: 8px; text-shadow: 2px 2px 0 #000; }
-    .title { font-size: 2.2vh; color: #ff0; margin-bottom: 3px; text-transform: uppercase; }
-    .time { font-size: 1.8vh; color: #0ff; }
-    .subtitle { font-size: 1.3vh; color: #ccc; text-transform: uppercase; }
-    
-    table { width: 100%; border-collapse: collapse; height: calc(100% - 70px); }
-    th { background: #333; color: #ff0; padding: 5px 2px; font-size: 1.3vh; text-align: center; text-transform: uppercase; border-bottom: 2px solid #fff; }
-    td { padding: 4px 2px; text-align: center; border-bottom: 1px solid #444; font-size: 1.6vh; height: 8%; vertical-align: middle; }
-    
-    .flight { color: #fff; font-size: 1.8vh; font-weight: bold; }
-    .city { color: #ccc; font-size: 1.5vh; }
-    .time-col { color: #ff0; font-size: 1.7vh; font-weight: bold; }
-    .status { font-size: 1.2vh; text-transform: uppercase; padding: 1px 4px; font-weight: bold; }
-    .terminal { background: #444; color: #ff0; padding: 2px 4px; border-radius: 2px; font-size: 1.2vh; }
-    
-    .active { color: #00ff00 !important; text-shadow: 0 0 3px #00ff00; }
-    .landed { color: #00ff88 !important; text-shadow: 0 0 3px #00ff88; }
-    .delayed { color: #ff6600 !important; background: #331100; animation: blink 1s infinite; }
-    .cancelled { color: #ff0000 !important; background: #330000; animation: blink 0.6s infinite; }
-    @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0.3; } }
-    .empty { color: #666; font-style: italic; }
-    .recent { border-left: 3px solid #00ff88; background: rgba(0,255,136,0.1); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Табло аэропорта</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120,219,255,0.2) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgShift 20s ease-in-out infinite;
+        }
+        
+        @keyframes bgShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+        
+        .airport-board {
+            width: 100%;
+            height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, #000 0%, #001100 50%, #000 100%);
+            box-shadow: inset 0 0 50px rgba(0,255,0,0.1);
+        }
+        
+        .board-header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00; }
+            to { text-shadow: 0 0 30px #00ff00, 0 0 60px #00ff00, 0 0 80px #00ff00; }
+        }
+        
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: rgba(0,255,0,0.1);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 12px 24px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,255,0,0.3);
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(0,255,0,0.2);
+            box-shadow: 0 0 25px rgba(0,255,0,0.6);
+            transform: translateY(-2px);
+        }
+        
+        .flights-table {
+            flex: 1;
+            border-collapse: collapse;
+            width: 100%;
+            background: rgba(0,20,0,0.8);
+            border: 3px solid #00ff00;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 30px rgba(0,255,0,0.4),
+                inset 0 0 30px rgba(0,255,0,0.1);
+        }
+        
+        .flights-table th {
+            background: linear-gradient(90deg, #003300 0%, #006600 100%);
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 900;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #00ff00;
+            position: relative;
+        }
+        
+        .flights-table th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: scanline 3s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .flights-table td {
+            padding: 18px 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(0,255,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .flights-table tr:hover td {
+            background: rgba(0,255,0,0.1);
+            box-shadow: inset 0 0 20px rgba(0,255,0,0.2);
+        }
+        
+        .flight-type {
+            font-size: 1.3rem;
+            font-weight: 900;
+            padding-right: 20px;
+            position: relative;
+        }
+        
+        .flight-type::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        .airline {
+            font-size: 1.1rem;
+            color: #00ccff;
+        }
+        
+        .flight-number {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #ff6600;
+            letter-spacing: 3px;
+        }
+        
+        .destination {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        
+        .time {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+        }
+        
+        .status {
+            font-weight: 900;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status.on-time {
+            background: rgba(0,255,0,0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .status.delayed {
+            background: rgba(255,165,0,0.3);
+            color: #ffaa00;
+            border: 1px solid #ffaa00;
+        }
+        
+        .status.cancelled {
+            background: rgba(255,0,0,0.3);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(0,255,0,0.5); }
+            50% { box-shadow: 0 0 20px rgba(0,255,0,0.8); }
+        }
+        
+        .note {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Анимация появления строк */
+        .flights-table tbody tr {
+            animation: slideIn 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        
+        .flights-table tbody tr:nth-child(odd) { animation-delay: 0.1s; }
+        .flights-table tbody tr:nth-child(even) { animation-delay: 0.2s; }
+        
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .flights-table {
+                font-size: 0.9rem;
+            }
+            
+            .flights-table th,
+            .flights-table td {
+                padding: 12px 8px;
+            }
+        }
+        
+        /* Скрытие строк по фильтрам */
+        .flights-table tr.hide {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <!-- ВЫЛЕТЫ -->
-    <div class="panel departures">
-      <div class="header">
-        <div class="title">ШЕРЕМЕТЬЕВО SVO</div>
-        <div class="time" id="depTime">МСК 16:19</div>
-        <div class="subtitle">10 будущих вылетов</div>
-      </div>
-      <table id="departures">
-        <thead><tr><th>РЕЙС</th><th>Куда</th><th>Время</th><th>Статус</th><th>Т</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="airport-board">
+        <div class="board-header">Аэропорт Birmingham</div>
+        
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">ВСЕ</button>
+            <button class="filter-btn active" data-filter="in">ПРИЛЕТ</button>
+            <button class="filter-btn active" data-filter="out">ВЫЛЕТ</button>
+        </div>
+        
+        <table class="flights-table">
+            <thead>
+                <tr>
+                    <th>Тип</th>
+                    <th>Авиакомпания</th>
+                    <th>Рейс</th>
+                    <th>Самолет</th>
+                    <th>Город</th>
+                    <th>Время</th>
+                    <th>Статус</th>
+                    <th>Примечание</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="in">
+                    <td class="flight-type">→</td>
+                    <td class="airline">British Airways</td>
+                    <td class="flight-number">BA1234</td>
+                    <td>A320</td>
+                    <td>London Heathrow</td>
+                    <td class="time">14:25</td>
+                    <td class="status on-time">По расписанию</td>
+                    <td class="note">Гейт 5</td>
+                </tr>
+                <tr class="out">
+                    <td class="flight-type">←</td>
+                    <td class="airline">Ryanair</td>
+                    <td class="flight-number">FR5678</td>
+                    <td>B738</td>
+                    <td>Dublin</td>
+                    <td class="time">14:35</td>
+                    <td class="status delayed">Задержка +25</td>
+                    <td class="note">Новый гейт 12</td>
+                </tr>
+                <tr class="in">
+                    <td class="flight-type">→</td>
+                    <td class="airline">EasyJet</td>
+                    <td class="flight-number">U28590</td>
+                    <td>A319</td>
+                    <td>Amsterdam</td>
+                    <td class="time">14:42</td>
+                    <td class="status on-time">Посадка</td>
+                    <td class="note">Гейт 3</td>
+                </tr>
+                <tr class="out">
+                    <td class="flight-type">←</td>
+                    <td class="airline">Lufthansa</td>
+                    <td class="flight-number">LH987</td>
+                    <td>A320</td>
+                    <td>Frankfurt</td>
+                    <td class="time">14:50</td>
+                    <td class="status on-time">Регистрация</td>
+                    <td class="note">Гейт 8</td>
+                </tr>
+                <tr class="in">
+                    <td class="flight-type">→</td>
+                    <td class="airline">Emirates</td>
+                    <td class="flight-number">EK123</td>
+                    <td>A380</td>
+                    <td>Dubai</td>
+                    <td class="time">14:55</td>
+                    <td class="status on-time">Приземлился</td>
+                    <td class="note">Гейт 1</td>
+                </tr>
+                <tr class="out">
+                    <td class="flight-type">←</td>
+                    <td class="airline">Wizz Air</td>
+                    <td class="flight-number">W61234</td>
+                    <td>A321</td>
+                    <td>Warsaw</td>
+                    <td class="time">15:00</td>
+                    <td class="status cancelled">Отменен</td>
+                    <td class="note">Тех. неисправность</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    
-    <!-- ПРИЛЁТЫ -->
-    <div class="panel arrivals">
-      <div class="header">
-        <div class="title">ШЕРЕМЕТЬЕВО SVO</div>
-        <div class="time" id="arrTime">МСК 16:19</div>
-        <div class="subtitle">10 последних + 10 будущих прилетов</div>
-      </div>
-      <table id="arrivals">
-        <thead><tr><th>РЕЙС</th><th>Откуда</th><th>Время</th><th>Статус</th><th>Т</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
 
-  <script>
-    const AIRLABS_KEY = 'b678f9df-013d-46f0-b536-d5a8be6a3428';
-    
-    // Часы МСК
-    function updateClock() {
-      const now = new Date().toLocaleString('ru-RU', {timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit'});
-      document.getElementById('depTime').textContent = `МСК ${now}`;
-      document.getElementById('arrTime').textContent = `МСК ${now}`;
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-    
-    // AirLabs API
-    async function loadAirLabsData() {
-      try {
-        console.log('🔄 AirLabs загрузка...');
-        
-        const depUrl = `https://airlabs.co/api/v9/flights?dep_iata=SVO&amount=50&api_key=${AIRLABS_KEY}`;
-        const arrUrl = `https://airlabs.co/api/v9/flights?arr_iata=SVO&amount=50&api_key=${AIRLABS_KEY}`;
-        
-        const [depRes, arrRes] = await Promise.all([
-          fetch(depUrl),
-          fetch(arrUrl)
-        ]);
-        
-        const depData = await depRes.json();
-        const arrData = await arrRes.json();
-        
-        console.log('Вылеты:', depData.response?.length || 0);
-        console.log('Прилеты:', arrData.response?.length || 0);
-        
-        updateTable(depData.response || [], 'departures', true);
-        updateTable(arrData.response || [], 'arrivals', false);
-        
-        return true;
-      } catch(e) {
-        console.error('AirLabs ошибка:', e);
-        return false;
-      }
-    }
-    
-    // Обновление таблицы
-    function updateTable(flights, tableId, isDeparture) {
-      const tbody = document.querySelector(`#${tableId} tbody`);
-      tbody.innerHTML = '';
-      
-      const now = new Date();
-      
-      // Фильтрация рейсов
-      let filteredFlights = flights
-        .filter(flight => {
-          const timeField = isDeparture ? 'dep_time' : 'arr_time';
-          const timestamp = flight[timeField];
-          if (!timestamp) return false;
-          
-          const flightTime = new Date(timestamp * 1000);
-          flightTime.setHours(flightTime.getHours() - 5); // -5ч коррекция
-          
-          const diffHours = (flightTime - now) / (1000 * 60 * 60);
-          return diffHours >= -4 && diffHours <= 3;
-        })
-        .map(flight => {
-          const timeField = isDeparture ? 'dep_time' : 'arr_time';
-          const flightTime = new Date(flight[timeField] * 1000);
-          flightTime.setHours(flightTime.getHours() - 5);
-          
-          return {
-            ...flight,
-            displayTime: flightTime,
-            flightNum: flight.flight_iata || flight.flight_icao?.slice(-4) || 'N/A',
-            city: isDeparture ? (flight.arr_iata_name || flight.arr_icao_name || flight.arr) : 
-                               (flight.dep_iata_name || flight.dep_icao_name || flight.dep)
-          };
-        })
-        .sort((a, b) => a.displayTime - b.displayTime)
-        .slice(0, 10);
-      
-      // Добавление рейсов в таблицу
-      filteredFlights.forEach(flight => {
-        const status = (flight.status || 'scheduled').toLowerCase();
-        const statusClass = status.includes('landed') ? 'landed' : 
-                           status.includes('active') || status.includes('enroute') ? 'active' : 
-                           status.includes('cancel') ? 'cancelled' : 
-                           status.includes('delay') ? 'delayed' : '';
-        
-        const row = tbody.insertRow();
-        const isRecentLanded = !isDeparture && status.includes('landed');
-        row.className = `${statusClass} ${isRecentLanded ? 'recent' : ''}`;
-        
-        row.innerHTML = `
-          <td class="flight">${flight.flightNum}</td>
-          <td class="city">${flight.city}</td>
-          <td class="time-col">${flight.displayTime.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</td>
-          <td class="status ${statusClass}">${status.toUpperCase()}</td>
-          <td class="terminal">${flight.terminal || '?'}</td>
-        `;
-      });
-      
-      // Заполнение пустых строк
-      const targetRows = tableId === 'departures' ? 10 : 20;
-      while (tbody.rows.length < targetRows) {
-        const row = tbody.insertRow();
-        row.innerHTML = '<td colspan="5" class="empty">нет рейсов</td>';
-      }
-    }
-    
-    // РЕАЛИСТИЧНЫЕ ФЕЙК ДАННЫЕ (если API не работает)
-    const fakeDepartures = [
-      {flight_iata: 'SU1321', arr_iata_name: 'Лондон LHR', dep_time: Math.floor(Date.now()/1000 + 1800), status: 'scheduled', terminal: 'B'},
-      {flight_iata: 'SU456', arr_iata_name: 'Париж CDG', dep_time: Math.floor(Date.now()/1000 + 1200), status: 'active', terminal: 'D'},
-      {flight_iata: 'SU789', arr_iata_name: 'Рим FCO', dep_time: Math.floor(Date.now()/1000 + 3600), status: 'scheduled', terminal: 'C'},
-      {flight_iata: 'SU1014', arr_iata_name: 'Барселона BCN', dep_time: Math.floor(Date.now()/1000 + 3000), status: 'delayed', terminal: 'F'},
-      {flight_iata: 'SU2023', arr_iata_name: 'Дубай DXB', dep_time: Math.floor(Date.now()/1000 + 5400), status: 'scheduled', terminal: 'B'},
-      {flight_iata: 'SU3307', arr_iata_name: 'Стамбул IST', dep_time: Math.floor(Date.now()/1000 + 4200), status: 'active', terminal: 'D'},
-      {flight_iata: 'SU414', arr_iata_name: 'Тель-Авив TLV', dep_time: Math.floor(Date.now()/1000 + 6000), status: 'scheduled', terminal: 'C'},
-      {flight_iata: 'SU525', arr_iata_name: 'Прага PRG', dep_time: Math.floor(Date.now()/1000 + 7200), status: 'scheduled', terminal: 'B'},
-      {flight_iata: 'SU606', arr_iata_name: 'Амстердам AMS', dep_time: Math.floor(Date.now()/1000 + 9000), status: 'scheduled', terminal: 'F'},
-      {flight_iata: 'SU707', arr_iata_name: 'Хельсинки HEL', dep_time: Math.floor(Date.now()/1000 + 10800), status: 'scheduled', terminal: 'D'}
-    ];
-    
-    const fakeArrivals = [
-      {flight_iata: 'SU1111', dep_iata_name: 'Казань KZN', arr_time: Math.floor(Date.now()/1000 - 1800), status: 'landed', terminal: 'B'},
-      {flight_iata: 'SU2222', dep_iata_name: 'Екатеринбург SVX', arr_time: Math.floor(Date.now()/1000 - 2400), status: 'landed', terminal: 'D'},
-      {flight_iata: 'SU3333', dep_iata_name: 'Новосибирск OVB', arr_time: Math.floor(Date.now()/1000 - 3600), status: 'landed', terminal: 'C'},
-      {flight_iata: 'SU4444', dep_iata_name: 'Краснодар KRR', arr_time: Math.floor(Date.now()/1000 - 4800), status: 'landed', terminal: 'F'},
-      {flight_iata: 'SU5555', dep_iata_name: 'Сочи AER', arr_time: Math.floor(Date.now()/1000 - 6000), status: 'landed', terminal: 'B'},
-      {flight_iata: 'SU6666', dep_iata_name: 'Самара KUF', arr_time: Math.floor(Date.now()/1000 - 7200), status: 'landed', terminal: 'D'},
-      {flight_iata: 'SU7777', dep_iata_name: 'Уфа UFA', arr_time: Math.floor(Date.now()/1000 - 9000), status: 'landed', terminal: 'C'},
-      {flight_iata: 'SU8888', dep_iata_name: 'Ростов ROV', arr_time: Math.floor(Date.now()/1000 - 10800), status: 'landed', terminal: 'F'},
-      {flight_iata: 'SU9999', dep_iata_name: 'Минск MSQ', arr_time: Math.floor(Date.now()/1000 - 12600), status: 'landed', terminal: 'B'},
-      {flight_iata: 'SU1000', dep_iata_name: 'Киев KBP', arr_time: Math.floor(Date.now()/1000 - 14400), status: 'landed', terminal: 'D'}
-    ];
-    
-    // Главная функция загрузки
-    async function loadData() {
-      const apiSuccess = await loadAirLabsData();
-      
-      // Если API не работает - фейк данные
-      if (!apiSuccess) {
-        console.log('📱 Используем фейк данные');
-        updateTable(fakeDepartures, 'departures', true);
-        updateTable(fakeArrivals.concat(fakeDepartures.slice(0, 10)), 'arrivals', false);
-      }
-    }
-    
-    // Запуск
-    loadData();
-    setTimeout(loadData, 3000);
-    setInterval(loadData, 60000); // каждую минуту
-  </script>
+    <script>
+        // Фильтрация рейсов
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Убираем active у всех кнопок
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                // Добавляем active текущей
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                const rows = document.querySelectorAll('.flights-table tbody tr');
+                
+                rows.forEach(row => {
+                    if (filter === 'all') {
+                        row.classList.remove('hide');
+                    } else {
+                        row.classList.toggle('hide', !row.classList.contains(filter));
+                    }
+                });
+            });
+        });
+
+        // Имитация обновления статуса
+        setInterval(() => {
+            const statuses = document.querySelectorAll('.status');
+            statuses.forEach(status => {
+                if (Math.random() < 0.1) { // 10% шанс изменения
+                    const current = status.textContent;
+                    if (current.includes('По расписанию')) {
+                        status.textContent = 'Задержка +15';
+                        status.className = 'status delayed';
+                    } else if (current.includes('Задержка')) {
+                        status.textContent = 'По расписанию';
+                        status.className = 'status on-time';
+                    }
+                }
+            });
+        }, 10000);
+
+        // Анимация мигания номеров рейсов
+        setInterval(() => {
+            document.querySelectorAll('.flight-number').forEach(num => {
+                num.style.animation = 'none';
+                setTimeout(() => {
+                    num.style.animation = 'blink 0.5s ease-in-out';
+                }, 10);
+            });
+        }, 15000);
+    </script>
 </body>
 </html>
