@@ -44,11 +44,10 @@
 </head>
 <body>
   <div class="container">
-    <!-- ВЫЛЕТЫ -->
     <div class="panel departures">
       <div class="header">
         <div class="title">ШЕРЕМЕТЬЕВО SVO</div>
-        <div class="time" id="depTime">МСК 16:07</div>
+        <div class="time" id="depTime">МСК 16:09</div>
         <div class="subtitle">10 будущих вылетов</div>
       </div>
       <table id="departures">
@@ -57,11 +56,10 @@
       </table>
     </div>
     
-    <!-- ПРИЛЁТЫ -->
     <div class="panel arrivals">
       <div class="header">
         <div class="title">ШЕРЕМЕТЬЕВО SVO</div>
-        <div class="time" id="arrTime">МСК 16:07</div>
+        <div class="time" id="arrTime">МСК 16:09</div>
         <div class="subtitle">10 последних + 10 будущих прилетов</div>
       </div>
       <table id="arrivals">
@@ -74,7 +72,6 @@
   <script>
     const AIRLABS_KEY = 'b678f9df-013d-46f0-b536-d5a8be6a3428';
     
-    // Часы МСК
     function updateClock() {
       const now = new Date().toLocaleString('ru-RU', {timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit'});
       document.getElementById('depTime').textContent = `МСК ${now}`;
@@ -83,116 +80,84 @@
     updateClock();
     setInterval(updateClock, 1000);
     
-    // AirLabs API запросы
-    async function loadDepartures() {
+    // ✅ ПРЯМАЯ загрузка AirLabs
+    async function loadData() {
+      console.log('🔄 Загрузка AirLabs...');
+      
+      // Вылеты SVO
       try {
-        const response = await fetch(`https://airlabs.co/api/v9/flights?dep_iata=SVO&api_key=${AIRLABS_KEY}&duration=3`);
-        const data = await response.json();
-        updateAirLabsTable(data.response || [], 'departures', true);
+        const depRes = await fetch(`https://airlabs.co/api/v9/flights?dep_iata=SVO&amount=20&api_key=${AIRLABS_KEY}`);
+        const depData = await depRes.json();
+        console.log('Вылеты:', depData.response?.length || 0);
+        updateTable(depData.response || [], 'departures', true);
       } catch(e) {
-        console.error('Вылеты:', e);
-        showEmptyTable('departures', 10);
+        console.error('Вылеты ошибка:', e);
       }
-    }
-    
-    async function loadArrivals() {
+      
+      // Прилеты SVO
       try {
-        const response = await fetch(`https://airlabs.co/api/v9/flights?arr_iata=SVO&api_key=${AIRLABS_KEY}&duration=3`);
-        const data = await response.json();
-        updateAirLabsTable(data.response || [], 'arrivals', false);
+        const arrRes = await fetch(`https://airlabs.co/api/v9/flights?arr_iata=SVO&amount=20&api_key=${AIRLABS_KEY}`);
+        const arrData = await arrRes.json();
+        console.log('Прилеты:', arrData.response?.length || 0);
+        updateTable(arrData.response || [], 'arrivals', false);
       } catch(e) {
-        console.error('Прилёты:', e);
-        showEmptyTable('arrivals', 20);
+        console.error('Прилеты ошибка:', e);
       }
     }
     
-    function showEmptyTable(tableId, rowsCount) {
-      const tbody = document.querySelector(`#${tableId} tbody`);
-      tbody.innerHTML = '';
-      while(tbody.rows.length < rowsCount) {
-        const row = tbody.insertRow();
-        row.innerHTML = '<td colspan="5" class="empty">нет данных</td>';
-      }
-    }
-    
-    function updateAirLabsTable(flights, tableId, isDeparture) {
+    function updateTable(flights, tableId, isDeparture) {
       const tbody = document.querySelector(`#${tableId} tbody`);
       tbody.innerHTML = '';
       
+      // Фильтр ближайших рейсов
       const now = new Date();
-      const filteredFlights = flights
-        .filter(flight => {
-          const timeField = isDeparture ? flight.dep_time : flight.arr_time;
-          if (!timeField) return false;
-          
-          const scheduledTime = new Date(timeField * 1000); // AirLabs возвращает UNIX timestamp
-          scheduledTime.setHours(scheduledTime.getHours() - 5); // -5ч коррекция
-          
-          const diffHours = (scheduledTime - now) / (1000 * 60 * 60);
-          return diffHours >= -4 && diffHours <= 3; // последние 4ч + будущие 3ч
+      const filtered = flights
+        .filter(f => f[isDeparture ? 'dep_time' : 'arr_time'])
+        .map(f => {
+          const time = new Date((f[isDeparture ? 'dep_time' : 'arr_time'] || 0) * 1000);
+          time.setHours(time.getHours() - 5); // -5ч
+          return {...f, displayTime: time};
         })
-        .sort((a, b) => {
-          const timeA = new Date((isDeparture ? a.dep_time : a.arr_time) * 1000);
-          timeA.setHours(timeA.getHours() - 5);
-          const timeB = new Date((isDeparture ? b.dep_time : b.arr_time) * 1000);
-          timeB.setHours(timeB.getHours() - 5);
-          return timeA - timeB;
+        .filter(f => {
+          const diff = (f.displayTime - now) / (1000 * 60 * 60);
+          return diff >= -4 && diff <= 3; // ± время
         })
+        .sort((a, b) => a.displayTime - b.displayTime)
         .slice(0, 10);
       
-      filteredFlights.forEach(flight => {
-        const status = (flight.status || 'scheduled').toLowerCase();
-        const statusClass = status.includes('landed') ? 'landed' : 
-                           status.includes('active') || status.includes('en-route') ? 'active' : 
-                           status.includes('cancelled') ? 'cancelled' : 
-                           status.includes('delay') ? 'delayed' : '';
-        
-        const timeField = isDeparture ? flight.dep_time : flight.arr_time;
-        const displayTime = new Date(timeField * 1000);
-        displayTime.setHours(displayTime.getHours() - 5);
-        const flightTime = displayTime.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+      filtered.forEach(flight => {
+        const status = (flight.status || 'scheduled').toUpperCase();
+        const statusClass = status.includes('LANDED') ? 'landed' : 
+                           status.includes('ACTIVE') ? 'active' : 
+                           status.includes('CANCEL') ? 'cancelled' : '';
         
         const flightNum = flight.flight_iata || flight.flight_icao?.slice(-4) || 'N/A';
-        const city = isDeparture ? flight.arr_iata_name || flight.arr : 
-                          flight.dep_iata_name || flight.dep;
+        const city = isDeparture ? (flight.arr_iata_name || flight.arr) : (flight.dep_iata_name || flight.dep);
         const terminal = flight.terminal || '?';
         
         const row = tbody.insertRow();
-        row.className = `${statusClass} ${tableId === 'arrivals' && status.includes('landed') ? 'recent' : ''}`;
+        row.className = `${statusClass} ${!isDeparture && status.includes('LANDED') ? 'recent' : ''}`;
         row.innerHTML = `
           <td class="flight">${flightNum}</td>
           <td class="city">${city}</td>
-          <td class="time-col">${flightTime}</td>
-          <td class="status ${statusClass}">${status.toUpperCase()}</td>
+          <td class="time-col">${flight.displayTime.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</td>
+          <td class="status ${statusClass}">${status}</td>
           <td class="terminal">${terminal}</td>
         `;
       });
       
-      const targetRows = tableId === 'departures' ? 10 : 20;
-      while(tbody.rows.length < targetRows) {
+      // Заполнить пустые строки
+      const rowsNeeded = tableId === 'departures' ? 10 : 20;
+      while(tbody.rows.length < rowsNeeded) {
         const row = tbody.insertRow();
-        row.innerHTML = '<td colspan="5" class="empty">нет рейсов</td>';
+        row.innerHTML = '<td colspan="5" class="empty">загрузка...</td>';
       }
     }
     
-    // Fallback на fake данные
-    function loadFakeData() {
-      const fakeDepartures = [
-        {flight_iata: 'SU1321', arr_iata_name: 'Лондон LHR', dep_time: Date.now()/1000, status: 'scheduled', terminal: 'B'},
-        {flight_iata: 'SU456', arr_iata_name: 'Париж CDG', dep_time: Date.now()/1000 + 900, status: 'active', terminal: 'D'},
-        {flight_iata: 'SU789', arr_iata_name: 'Рим FCO', dep_time: Date.now()/1000 + 1800, status: 'scheduled', terminal: 'C'}
-      ];
-      updateAirLabsTable(fakeDepartures, 'departures', true);
-      updateAirLabsTable(fakeDepartures, 'arrivals', false);
-    }
-    
-    // Запуск
-    loadDepartures();
-    loadArrivals();
-    setInterval(() => {
-      loadDepartures();
-      loadArrivals();
-    }, 120000);
+    // Запуск немедленно + каждые 2 минуты
+    loadData();
+    setTimeout(loadData, 5000); // Повтор через 5 сек
+    setInterval(loadData, 120000);
   </script>
 </body>
 </html>
