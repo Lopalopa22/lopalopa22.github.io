@@ -1,399 +1,278 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airport Live Board - Final Compact</title>
+    <title>VKO Внуково - Живые Вылеты + Прилёты</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
             color: #ffffff;
             font-family: 'Roboto Condensed', sans-serif;
-            height: 100vh;
-            overflow: hidden;
+            padding: 20px;
+            min-height: 100vh;
         }
         
-        .screen-frame {
-            width: 97%;
-            height: 96%;
-            margin: 12px auto;
-            background: linear-gradient(145deg, #333 0%, #222 100%);
-            border: 4px solid #444;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #0f4c75 0%, #1a5a8c 100%);
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            margin-bottom: 25px;
+        }
+        
+        .airport-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .airport-code {
+            font-size: 1.3rem;
+            color: #e0e0e0;
+            letter-spacing: 4px;
+            font-weight: 400;
+        }
+        
+        .boards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .board {
+            background: rgba(20,20,20,0.95);
+            border: 3px solid #444;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+        
+        .board:hover {
+            transform: translateY(-5px);
+        }
+        
+        .board-header {
+            padding: 20px;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            border-bottom: 3px solid #555;
+        }
+        
+        .departures .board-header { 
+            background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+            color: white;
+        }
+        .arrivals .board-header { 
+            background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%);
+            color: white;
+        }
+        
+        .iframe-container {
+            height: 500px;
             position: relative;
             overflow: hidden;
         }
         
-        .led-screen {
+        .iframe-container iframe {
             width: 100%;
             height: 100%;
-            background: #111;
-            padding: 15px;
-            box-sizing: border-box;
+            border: 0;
+            border-radius: 0 0 12px 12px;
         }
         
-        .main-header {
+        .avionio-footer {
+            background: rgba(0,0,0,0.8);
+            padding: 12px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        
+        .avionio-links a {
+            color: #FD6150 !important;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        
+        .avionio-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .yandex-container {
+            grid-column: 1 / -1;
+            background: rgba(20,20,20,0.95);
+            border: 3px solid #444;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+            margin-top: 25px;
+        }
+        
+        .yandex-header {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            padding: 20px;
             text-align: center;
             font-size: 1.4rem;
             font-weight: 700;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-            color: #eee;
+            color: white;
             text-transform: uppercase;
-        }
-        
-        .airport-code {
-            text-align: center;
-            font-size: 0.85rem;
-            color: #ccc;
-            font-weight: 400;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-        }
-        
-        .boards-container {
-            display: flex;
-            gap: 12px;
-            height: calc(100% - 75px);
-        }
-        
-        .board {
-            flex: 1;
-            background: rgba(20,20,20,0.95);
-            border: 2px solid #555;
-            border-radius: 6px;
-            padding: 12px;
-            overflow: hidden;
-        }
-        
-        .board-header {
-            text-align: center;
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #666;
             letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-        
-        .departures .board-header { color: #ddd; border-color: #777; }
-        .arrivals .board-header { color: #bbb; border-color: #666; }
-        
-        table {
-            width: 100%;
-            height: 100%;
-            border-collapse: collapse;
-            font-size: 0.7rem;
-            color: #fff;
-            line-height: 1.2;
-        }
-        
-        th {
-            background: #2a2a2a;
-            color: #ccc;
-            padding: 6px 5px;
-            text-align: left;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            border-bottom: 1px solid #444;
-        }
-        
-        td {
-            padding: 6px 5px;
-            border-bottom: 1px solid #333;
-            font-weight: 500;
-        }
-        
-        tr:hover td {
-            background: rgba(255,255,255,0.04);
-        }
-        
-        tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .time {
-            font-size: 0.85rem;
-            font-weight: 700;
-            min-width: 55px;
-            color: #fff;
-        }
-        
-        .flight {
-            font-size: 0.8rem;
-            font-weight: 700;
-            min-width: 65px;
-            color: #e0e0e0;
-        }
-        
-        .city {
-            min-width: 110px;
-            font-size: 0.8rem;
-        }
-        
-        .status {
-            text-align: center;
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            min-width: 70px;
-        }
-        
-        .status.scheduled { 
-            background: #4a5568; 
-            color: #a0aec0; 
-            border: 1px solid #718096;
-        }
-        .status.ontime { 
-            background: #2f855a; 
-            color: #ffffff; 
-            border: 1px solid #38a169;
-        }
-        .status.delayed { 
-            background: #c53030; 
-            color: #ffffff; 
-            border: 1px solid #e53e3e;
-            animation: pulse 2s infinite;
-        }
-        .status.landed { 
-            background: #2b6cb0; 
-            color: #ffffff; 
-            border: 1px solid #4299e1;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
         }
         
         .status-bar {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            padding: 5px 15px;
-            border-radius: 15px;
-            border: 1px solid #555;
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.9);
+            border-radius: 10px;
             color: #aaa;
-            font-size: 0.7rem;
-            letter-spacing: 0.5px;
+            font-size: 1rem;
+            margin-top: 20px;
+            border: 2px solid #555;
         }
         
-        @media (max-width: 1024px) {
-            .boards-container { 
-                flex-direction: column; 
-                gap: 10px; 
-                height: calc(100% - 85px);
+        .update-time {
+            color: #4caf50;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 1200px) {
+            .boards-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
-            .main-header { font-size: 1.2rem; }
-            table { font-size: 0.65rem; }
+        }
+        
+        @media (max-width: 768px) {
+            .airport-title { font-size: 1.6rem; }
+            .airport-code { font-size: 1rem; }
+            .iframe-container { height: 400px; }
         }
     </style>
 </head>
 <body>
-    <div class="screen-frame">
-        <div class="led-screen">
-            <div class="main-header" id="airportName">New York JFK</div>
-            <div class="airport-code" id="airportCode">JFK</div>
-            
-            <div class="boards-container">
-                <!-- DEPARTURES -->
-                <div class="board departures">
-                    <div class="board-header">DEPARTURES</div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>TIME</th>
-                                <th>FLIGHT</th>
-                                <th>TO</th>
-                                <th>STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="departuresBody"></tbody>
-                    </table>
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="header">
+            <div class="airport-title">Аэропорт Внуково</div>
+            <div class="airport-code">VKO</div>
+        </div>
+        
+        <!-- Основные табло Avionio -->
+        <div class="boards-grid">
+            <!-- ВЫЛЕТЫ VKO -->
+            <div class="board departures">
+                <div class="board-header">📤 Вылеты</div>
+                <div class="iframe-container">
+                    <iframe id="avionio-departures" src="https://www.avionio.com/widget/ru/vko/departures?style=2"></iframe>
                 </div>
-                
-                <!-- ARRIVALS -->
-                <div class="board arrivals">
-                    <div class="board-header">ARRIVALS</div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>TIME</th>
-                                <th>FLIGHT</th>
-                                <th>FROM</th>
-                                <th>STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="arrivalsBody"></tbody>
-                    </table>
+                <div class="avionio-footer">
+                    <div class="avionio-links">
+                        <a href="https://www.avionio.com/ru/airport/vko/departures" target="_blank">VKO Вылеты</a>
+                        <span style="color: #FD6150;">♥</span>
+                        <a href="https://www.avionio.com/" target="_blank">Avionio.com</a>
+                    </div>
                 </div>
             </div>
             
-            <div class="status-bar" id="statusBar">
-                <span id="statusText">Live AirLabs API • Updates every 5min</span>
+            <!-- ПРИЛЁТЫ VKO -->
+            <div class="board arrivals">
+                <div class="board-header">📥 Прилёты</div>
+                <div class="iframe-container">
+                    <iframe id="avionio-arrivals" src="https://www.avionio.com/widget/ru/vko/arrivals?style=2"></iframe>
+                </div>
+                <div class="avionio-footer">
+                    <div class="avionio-links">
+                        <a href="https://www.avionio.com/ru/airport/vko/arrivals" target="_blank">VKO Прилёты</a>
+                        <span style="color: #FD6150;">♥</span>
+                        <a href="https://www.avionio.com/" target="_blank">Avionio.com</a>
+                    </div>
+                </div>
             </div>
+        </div>
+        
+        <!-- Резервное Yandex табло -->
+        <div class="yandex-container">
+            <div class="yandex-header">🔄 Яндекс Расписание (резерв)</div>
+            <div style="padding: 20px; height: 350px;">
+                <iframe 
+                    frameborder="0" 
+                    style="box-shadow: 0 4px 12px rgba(0,0,0,0.3); width: 100%; height: 100%; border-radius: 8px;"
+                    src="https://rasp.yandex.ru/informers/station/9600215/?size=5&color=1&type=tablo">
+                </iframe>
+            </div>
+        </div>
+        
+        <!-- Статус обновлений -->
+        <div class="status-bar" id="statusBar">
+            ✅ Все виджеты работают в реальном времени | 
+            <span class="update-time" id="updateTime"></span>
         </div>
     </div>
 
     <script>
-        const API_KEY = 'b678f9df-013d-46f0-b536-d5a8be6a3428';
-        const statusEl = document.getElementById('statusText');
-        const departuresBody = document.getElementById('departuresBody');
-        const arrivalsBody = document.getElementById('arrivalsBody');
+        // Автообновление iframes каждые 5 минут
+        function refreshAllBoards() {
+            const now = new Date();
+            const timeString = now.toLocaleString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.getElementById('updateTime').textContent = timeString;
+            
+            // Перезагружаем Avionio виджеты
+            const departuresIframe = document.getElementById('avionio-departures');
+            const arrivalsIframe = document.getElementById('avionio-arrivals');
+            
+            // Добавляем timestamp к URL для принудительного обновления
+            departuresIframe.src = `https://www.avionio.com/widget/ru/vko/departures?style=2&t=${Date.now()}`;
+            arrivalsIframe.src = `https://www.avionio.com/widget/ru/vko/arrivals?style=2&t=${Date.now()}`;
+            
+            console.log('🔄 Табло обновлено:', timeString);
+        }
         
-        // CORS Proxy для AirLabs
-        const PROXY_URL = 'https://api.allorigins.win/get?url=';
-        const API_URL = `https://airlabs.co/api/v9/flights?api_key=${API_KEY}`;
-        
-        async function fetchLiveFlights() {
-            try {
-                statusEl.textContent = 'Fetching live flights...';
-                
-                const proxyResponse = await fetch(PROXY_URL + encodeURIComponent(API_URL));
-                const proxyData = await proxyResponse.json();
-                const data = JSON.parse(proxyData.contents);
-                
-                if (data.response_code === 200 && data.response && data.response.length > 0) {
-                    processFlights(data.response.slice(0, 100));
-                    return true;
-                } else {
-                    throw new Error('No flight data');
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAllBoards();
+            
+            // Обновление каждые 5 минут (300000 мс)
+            setInterval(refreshAllBoards, 300000);
+            
+            // Дополнительное обновление каждые 30 секунд для Yandex
+            setInterval(() => {
+                const yandexIframe = document.querySelector('.yandex-container iframe');
+                if (yandexIframe) {
+                    yandexIframe.src = yandexIframe.src;
                 }
-            } catch (error) {
-                console.error('API Error:', error);
-                statusEl.textContent = 'Using demo - JFK';
-                loadJFKDemo();
-                return false;
+            }, 30000);
+        });
+        
+        // Обработка ошибок iframe
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IFRAME') {
+                console.warn('Ошибка загрузки iframe:', e.target.src);
             }
-        }
-        
-        function processFlights(flights) {
-            // Фиксируем JFK как основной аэропорт
-            const airportCode = 'JFK';
-            const airportName = 'New York JFK';
-            
-            document.getElementById('airportName').textContent = airportName;
-            document.getElementById('airportCode').textContent = airportCode;
-            
-            const departures = flights
-                .filter(f => f.dep_iata === airportCode)
-                .slice(0, 10)
-                .map(f => formatFlight(f, 'departure'));
-            
-            const arrivals = flights
-                .filter(f => f.arr_iata === airportCode)
-                .slice(0, 10)
-                .map(f => formatFlight(f, 'arrival'));
-            
-            renderTable(departuresBody, departures);
-            renderTable(arrivalsBody, arrivals);
-            
-            statusEl.textContent = `JFK | ${departures.length}/${arrivals.length} flights | ${new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}`;
-        }
-        
-        function formatFlight(flight, type) {
-            const time = flight.updated ? new Date(flight.updated * 1000).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) : '--:--';
-            const flightNumber = flight.flight_iata || flight.flight_icao?.slice(0,5) || 'N/A';
-            const city = type === 'departure' ? (flight.arr_iata || 'N/A') : (flight.dep_iata || 'N/A');
-            const statusText = getStatusText(flight.status || 'active');
-            
-            return { time, flightNumber, city, statusText };
-        }
-        
-        function getStatusText(status) {
-            const statusMap = {
-                'scheduled': 'Scheduled',
-                'active': 'On Time', 
-                'landed': 'Landed',
-                'unknown': 'On Time',
-                'cancelled': 'Cancelled'
-            };
-            return statusMap[status?.toLowerCase()] || 'On Time';
-        }
-        
-        function getStatusClass(statusText) {
-            if (statusText === 'Scheduled') return 'scheduled';
-            if (statusText === 'Landed') return 'landed';
-            if (statusText.includes('Cancelled') || statusText.includes('Delay')) return 'delayed';
-            return 'ontime';
-        }
-        
-        function renderTable(tbody, flights) {
-            tbody.innerHTML = '';
-            
-            for (let i = 0; i < 10; i++) {
-                if (i < flights.length) {
-                    const flight = flights[i];
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="time">${flight.time}</td>
-                        <td class="flight">${flight.flightNumber}</td>
-                        <td class="city">${flight.city}</td>
-                        <td class="status ${getStatusClass(flight.statusText)}">${flight.statusText}</td>
-                    `;
-                    tbody.appendChild(row);
-                } else {
-                    const row = document.createElement('tr');
-                    row.innerHTML = '<td colspan="4">&nbsp;</td>';
-                    tbody.appendChild(row);
-                }
-            }
-        }
-        
-        function loadJFKDemo() {
-            const demoData = {
-                departures: [
-                    {time: '18:15', flightNumber: 'DL1931', city: 'MIA', statusText: 'On Time'},
-                    {time: '18:30', flightNumber: 'AA1357', city: 'MIA', statusText: 'Boarding'},
-                    {time: '18:45', flightNumber: 'B62104', city: 'SJU', statusText: 'Delayed'},
-                    {time: '19:00', flightNumber: 'DL5656', city: 'CMH', statusText: 'Scheduled'},
-                    {time: '19:10', flightNumber: 'UA567', city: 'ORD', statusText: 'On Time'},
-                    {time: '19:20', flightNumber: 'B65231', city: 'FLL', statusText: 'On Time'},
-                    {time: '19:30', flightNumber: 'AA758', city: 'DFW', statusText: 'Boarding'},
-                    {time: '19:40', flightNumber: 'DL1478', city: 'ATL', statusText: 'On Time'},
-                    {time: '19:50', flightNumber: 'UA1902', city: 'IAH', statusText: 'Scheduled'},
-                    {time: '20:00', flightNumber: 'B61645', city: 'BOS', statusText: 'On Time'}
-                ],
-                arrivals: [
-                    {time: '18:20', flightNumber: 'DL1234', city: 'ATL', statusText: 'Landed'},
-                    {time: '18:35', flightNumber: 'AA987', city: 'DFW', statusText: 'Landed'},
-                    {time: '18:50', flightNumber: 'UA456', city: 'ORD', statusText: 'On Time'},
-                    {time: '19:05', flightNumber: 'B51234', city: 'FLL', statusText: 'Landed'},
-                    {time: '19:15', flightNumber: 'DL2567', city: 'MIA', statusText: 'Landed'},
-                    {time: '19:25', flightNumber: 'AA321', city: 'PHX', statusText: 'On Time'},
-                    {time: '19:35', flightNumber: 'UA890', city: 'DEN', statusText: 'Landed'},
-                    {time: '19:45', flightNumber: 'B67890', city: 'SJU', statusText: 'On Time'},
-                    {time: '19:55', flightNumber: 'DL3456', city: 'DTW', statusText: 'Landed'},
-                    {time: '20:05', flightNumber: 'AA654', city: 'CLT', statusText: 'On Time'}
-                ]
-            };
-            
-            renderTable(departuresBody, demoData.departures);
-            renderTable(arrivalsBody, demoData.arrivals);
-            statusEl.textContent = `JFK Demo | 10/10 flights | ${new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}`;
-        }
-        
-        // Запуск
-        window.addEventListener('load', () => {
-            fetchLiveFlights();
-            setInterval(fetchLiveFlights, 300000); // 5 минут
         });
     </script>
 </body>
