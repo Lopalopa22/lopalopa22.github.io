@@ -15,7 +15,7 @@
         }
         
         body {
-            background: #0a0a0a;
+            background: #000000;
             color: #00ff41;
             font-family: 'Digital-7', monospace;
             height: 100vh;
@@ -54,13 +54,13 @@
         .board {
             flex: 1;
             max-width: 650px;
-            background: linear-gradient(145deg, #1a1a1a 0%, #0f0f0f 100%);
+            background: #000000;
             border: 4px solid #333;
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 
-                0 0 30px rgba(0,255,65,0.3),
-                inset 0 0 20px rgba(0,0,0,0.8);
+                0 0 30px rgba(0,255,65,0.4),
+                inset 0 0 20px rgba(0,0,0,0.9);
             position: relative;
         }
         
@@ -76,7 +76,7 @@
         }
         
         .board-header {
-            background: linear-gradient(135deg, #000 0%, #111 100%);
+            background: #000000;
             padding: 20px;
             text-align: center;
             font-size: 2.2rem;
@@ -89,17 +89,16 @@
         }
         
         .departures .board-header {
-            box-shadow: 0 0 20px rgba(0,255,65,0.5);
+            box-shadow: 0 0 20px rgba(0,255,65,0.6);
         }
         
         .arrivals .board-header {
-            background: linear-gradient(135deg, #001133 0%, #003366 100%);
             color: #00ccff;
             text-shadow: 0 0 15px #00ccff;
             border-bottom-color: #00ccff;
         }
         
-        .arrivals .board-header::before {
+        .arrivals .board::before {
             background: linear-gradient(90deg, #00ccff, #0099cc, #00ccff);
             box-shadow: 0 0 15px #00ccff;
         }
@@ -117,10 +116,23 @@
             display: block;
         }
         
-        /* Скрываем футер Яндекса */
-        .iframe-container iframe::-webkit-scrollbar,
-        .iframe-container iframe *::-webkit-scrollbar {
+        /* СКРЫВАЕМ ВСЕ ССЫЛКИ И ФУТЕР ЯНДЕКСА */
+        .iframe-container iframe,
+        .iframe-container iframe * {
+            pointer-events: none !important;
+        }
+        
+        .iframe-container iframe a,
+        .iframe-container iframe *[href],
+        .iframe-container iframe .footer,
+        .iframe-container iframe .branding,
+        .iframe-container iframe [class*="yandex"],
+        .iframe-container iframe [class*="link"] {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
         }
         
         .status-bar {
@@ -128,7 +140,7 @@
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             padding: 15px 30px;
             border-radius: 25px;
             border: 2px solid #00ff41;
@@ -136,7 +148,7 @@
             font-size: 1.1rem;
             font-family: 'Roboto Condensed', sans-serif;
             letter-spacing: 1px;
-            box-shadow: 0 0 25px rgba(0,255,65,0.4);
+            box-shadow: 0 0 25px rgba(0,255,65,0.5);
             z-index: 1000;
         }
         
@@ -150,18 +162,12 @@
         }
         
         @media (max-width: 1400px) {
-            .boards-container {
-                gap: 20px;
-            }
-            .airport-header {
-                font-size: 3rem;
-            }
+            .boards-container { gap: 20px; }
+            .airport-header { font-size: 3rem; }
         }
         
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
+            body { padding: 10px; }
             .airport-header {
                 font-size: 2.2rem;
                 letter-spacing: 4px;
@@ -175,9 +181,7 @@
                 height: calc(100vh - 160px);
                 gap: 15px;
             }
-            .board-header {
-                font-size: 1.6rem;
-            }
+            .board-header { font-size: 1.6rem; }
         }
     </style>
 </head>
@@ -188,28 +192,26 @@
     
     <!-- Две колонки табло -->
     <div class="boards-container">
-        <!-- ВЫЛЕТЫ - Левая колонка -->
+        <!-- 🚀 ЛЕВАЯ КОЛОНКА - ТОЛЬКО ВЫЛЕТЫ -->
         <div class="board departures">
             <div class="board-header">ВЫЛЕТЫ</div>
             <div class="iframe-container">
-                <!-- VKO Вылеты Яндекс (5 рейсов) -->
                 <iframe frameborder="0" src="https://rasp.yandex.ru/informers/station/9600215/?size=5&color=1&type=tablo&depArr=dep"></iframe>
             </div>
         </div>
         
-        <!-- ПРИЛЁТЫ - Правая колонка -->
+        <!-- 🚀 ПРАВАЯ КОЛОНКА - ТОЛЬКО ПРИЛЁТЫ -->
         <div class="board arrivals">
             <div class="board-header">ПРИЛЁТЫ</div>
             <div class="iframe-container">
-                <!-- VKO Прилёты Яндекс (5 рейсов) -->
                 <iframe frameborder="0" src="https://rasp.yandex.ru/informers/station/9600215/?size=5&color=1&type=tablo&depArr=arr"></iframe>
             </div>
         </div>
     </div>
     
-    <!-- Статус обновлений -->
+    <!-- Статус -->
     <div class="status-bar" id="statusBar">
-        <span class="blink">● LIVE</span> Обновление каждые 3 мин
+        <span class="blink">● LIVE</span> VKO Внуково
         <span id="updateTime"></span>
     </div>
 
@@ -222,27 +224,21 @@
                 second: '2-digit'
             });
             
-            document.getElementById('updateTime').textContent = timeString;
+            document.getElementById('updateTime').textContent = ` ${timeString}`;
             
-            // Обновляем iframes с timestamp
+            // Обновляем iframes
             const iframes = document.querySelectorAll('.iframe-container iframe');
             iframes.forEach(iframe => {
                 const currentSrc = iframe.src;
                 iframe.src = currentSrc + (currentSrc.includes('?') ? '&' : '?') + `t=${Date.now()}`;
             });
-            
-            console.log('🔄 VKO табло обновлено:', timeString);
         }
         
-        // Запуск
+        // Автозапуск
         document.addEventListener('DOMContentLoaded', function() {
             refreshBoards();
-            
-            // Обновление каждые 3 минуты (180 секунд)
-            setInterval(refreshBoards, 180000);
-            
-            // Быстрое обновление каждые 30 секунд
-            setInterval(refreshBoards, 30000);
+            setInterval(refreshBoards, 180000); // 3 минуты
+            setInterval(refreshBoards, 30000);  // 30 секунд
         });
     </script>
 </body>
