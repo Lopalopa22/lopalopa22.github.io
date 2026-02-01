@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Внуково VKO - Вылеты / Прилёты</title>
+    <title>VKO Внуково - Вылеты / Прилёты</title>
     <style>
         @import url('https://fonts.cdnfonts.com/css/digital-7');
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
         * {
             margin: 0;
@@ -15,53 +15,58 @@
         }
         
         body {
-            background: #000000;
-            color: #00ff41;
-            font-family: 'Digital-7', monospace;
+            background: linear-gradient(135deg, #0d1117 0%, #000000 100%);
+            color: #FFD700;
+            font-family: 'Orbitron', 'Digital-7', monospace;
             height: 100vh;
             overflow: hidden;
-            padding: 20px;
+            padding: 25px;
         }
         
-        .airport-header {
+        .main-header {
             text-align: center;
-            font-size: 3.5rem;
-            font-weight: 700;
-            letter-spacing: 8px;
-            margin-bottom: 15px;
-            text-shadow: 0 0 20px #00ff41;
-            color: #00ff41;
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 12px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
             text-transform: uppercase;
+            animation: glow 2s ease-in-out infinite alternate;
         }
         
         .airport-code {
             text-align: center;
-            font-size: 2.2rem;
-            color: #fff;
-            letter-spacing: 12px;
-            margin-bottom: 25px;
-            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #FFD700;
+            letter-spacing: 15px;
+            margin-bottom: 35px;
+            text-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
         }
         
         .boards-container {
             display: flex;
-            gap: 30px;
-            height: calc(100vh - 200px);
+            gap: 40px;
+            height: calc(100vh - 220px);
             justify-content: center;
             align-items: stretch;
         }
         
         .board {
             flex: 1;
-            max-width: 650px;
-            background: #000000;
-            border: 4px solid #333;
-            border-radius: 15px;
+            max-width: 700px;
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border: 5px solid transparent;
+            border-radius: 20px;
+            position: relative;
             overflow: hidden;
             box-shadow: 
-                0 0 30px rgba(0,255,65,0.4),
-                inset 0 0 20px rgba(0,0,0,0.9);
-            position: relative;
+                0 0 50px rgba(255, 215, 0, 0.3),
+                inset 0 0 30px rgba(0,0,0,0.7);
         }
         
         .board::before {
@@ -70,41 +75,57 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #00ff41, #00cc33, #00ff41);
-            box-shadow: 0 0 15px #00ff41;
+            height: 8px;
+            z-index: 2;
         }
         
         .board-header {
-            background: #000000;
-            padding: 20px;
+            background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
+            padding: 25px;
             text-align: center;
-            font-size: 2.2rem;
-            font-weight: 700;
-            letter-spacing: 4px;
-            color: #00ff41;
-            text-shadow: 0 0 15px #00ff41;
-            border-bottom: 3px solid #00ff41;
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 6px;
             text-transform: uppercase;
+            border-bottom: 4px solid;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .departures {
+            border-image: linear-gradient(90deg, #FFD700, #FFA500) 1;
         }
         
         .departures .board-header {
-            box-shadow: 0 0 20px rgba(0,255,65,0.6);
+            color: #FFD700;
+            text-shadow: 0 0 25px #FFD700;
+            border-bottom-color: #FFD700;
+            background: linear-gradient(135deg, #1a1a2e 0%, #FFD70010 100%);
+        }
+        
+        .departures::before {
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+            box-shadow: 0 0 20px #FFD700;
+        }
+        
+        .arrivals {
+            border-image: linear-gradient(90deg, #FF6B6B, #FF8E8E) 1;
         }
         
         .arrivals .board-header {
-            color: #00ccff;
-            text-shadow: 0 0 15px #00ccff;
-            border-bottom-color: #00ccff;
+            color: #FF6B6B;
+            text-shadow: 0 0 25px #FF6B6B;
+            border-bottom-color: #FF6B6B;
+            background: linear-gradient(135deg, #1a1a2e 0%, #FF6B6B20 100%);
         }
         
-        .arrivals .board::before {
-            background: linear-gradient(90deg, #00ccff, #0099cc, #00ccff);
-            box-shadow: 0 0 15px #00ccff;
+        .arrivals::before {
+            background: linear-gradient(90deg, #FF6B6B, #FF8E8E, #FF6B6B);
+            box-shadow: 0 0 20px #FF6B6B;
         }
         
         .iframe-container {
-            height: calc(100% - 90px);
+            height: calc(100% - 110px);
             position: relative;
             overflow: hidden;
         }
@@ -114,105 +135,112 @@
             height: 100%;
             border: 0;
             display: block;
+            border-radius: 0 0 15px 15px;
         }
         
-        /* СКРЫВАЕМ ВСЕ ССЫЛКИ И ФУТЕР ЯНДЕКСА */
+        /* СКРЫВАЕМ ФУТЕР AVIONIO */
         .iframe-container iframe,
         .iframe-container iframe * {
             pointer-events: none !important;
         }
         
-        .iframe-container iframe a,
-        .iframe-container iframe *[href],
+        .iframe-container iframe a[href*="avionio"],
+        .iframe-container iframe a[href*="rasp.yandex"],
         .iframe-container iframe .footer,
-        .iframe-container iframe .branding,
-        .iframe-container iframe [class*="yandex"],
-        .iframe-container iframe [class*="link"] {
+        .iframe-container iframe div[style*="font-size:12px"],
+        .iframe-container iframe div[style*="text-align: center"] {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             height: 0 !important;
-            width: 0 !important;
+            overflow: hidden !important;
         }
         
         .status-bar {
             position: fixed;
-            bottom: 30px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.95);
-            padding: 15px 30px;
-            border-radius: 25px;
-            border: 2px solid #00ff41;
-            color: #00ff41;
-            font-size: 1.1rem;
-            font-family: 'Roboto Condensed', sans-serif;
-            letter-spacing: 1px;
-            box-shadow: 0 0 25px rgba(0,255,65,0.5);
+            background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(26,26,46,0.95));
+            padding: 20px 40px;
+            border-radius: 30px;
+            border: 3px solid #FFD700;
+            color: #FFD700;
+            font-size: 1.3rem;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
             z-index: 1000;
+            backdrop-filter: blur(10px);
         }
         
         .blink {
             animation: blink 1s infinite;
+            color: #00ff00;
         }
         
         @keyframes blink {
             0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
+            51%, 100% { opacity: 0.4; }
         }
         
-        @media (max-width: 1400px) {
-            .boards-container { gap: 20px; }
-            .airport-header { font-size: 3rem; }
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px #FFD700); }
+            to { filter: drop-shadow(0 0 25px #FFD700); }
+        }
+        
+        @media (max-width: 1500px) {
+            .boards-container { gap: 25px; }
+            .main-header { font-size: 3.5rem; letter-spacing: 8px; }
         }
         
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .airport-header {
-                font-size: 2.2rem;
-                letter-spacing: 4px;
+            body { padding: 15px; }
+            .main-header {
+                font-size: 2.5rem;
+                letter-spacing: 5px;
             }
             .airport-code {
-                font-size: 1.5rem;
-                letter-spacing: 6px;
+                font-size: 2rem;
+                letter-spacing: 8px;
             }
             .boards-container {
                 flex-direction: column;
-                height: calc(100vh - 160px);
-                gap: 15px;
+                height: calc(100vh - 180px);
+                gap: 20px;
             }
-            .board-header { font-size: 1.6rem; }
+            .board-header { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
     <!-- Главный заголовок -->
-    <div class="airport-header">ВНУКОВО</div>
+    <div class="main-header">ВНУКОВО</div>
     <div class="airport-code">VKO</div>
     
-    <!-- Две колонки табло -->
+    <!-- Табло слева/справа -->
     <div class="boards-container">
-        <!-- 🚀 ЛЕВАЯ КОЛОНКА - ТОЛЬКО ВЫЛЕТЫ -->
+        <!-- ВЫЛЕТЫ - ЗОЛОТОЙ -->
         <div class="board departures">
-            <div class="board-header">ВЫЛЕТЫ</div>
+            <div class="board-header">ДЕПАРТЮРЫ</div>
             <div class="iframe-container">
-                <iframe frameborder="0" src="https://rasp.yandex.ru/informers/station/9600215/?size=5&color=1&type=tablo&depArr=dep"></iframe>
+                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/departures?style=2"></iframe>
             </div>
         </div>
         
-        <!-- 🚀 ПРАВАЯ КОЛОНКА - ТОЛЬКО ПРИЛЁТЫ -->
+        <!-- ПРИЛЁТЫ - КРАСНЫЙ -->
         <div class="board arrivals">
-            <div class="board-header">ПРИЛЁТЫ</div>
+            <div class="board-header">АРРИВАЛС</div>
             <div class="iframe-container">
-                <iframe frameborder="0" src="https://rasp.yandex.ru/informers/station/9600215/?size=5&color=1&type=tablo&depArr=arr"></iframe>
+                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/arrivals?style=2"></iframe>
             </div>
         </div>
     </div>
     
-    <!-- Статус -->
+    <!-- Статусбар -->
     <div class="status-bar" id="statusBar">
-        <span class="blink">● LIVE</span> VKO Внуково
-        <span id="updateTime"></span>
+        <span class="blink">● LIVE</span> Автообновление каждую минуту | 
+        <span id="updateTime">19:30:00</span>
     </div>
 
     <script>
@@ -224,21 +252,26 @@
                 second: '2-digit'
             });
             
-            document.getElementById('updateTime').textContent = ` ${timeString}`;
+            document.getElementById('updateTime').textContent = timeString;
             
-            // Обновляем iframes
+            // Обновляем AVIONIO iframes
             const iframes = document.querySelectorAll('.iframe-container iframe');
-            iframes.forEach(iframe => {
-                const currentSrc = iframe.src;
-                iframe.src = currentSrc + (currentSrc.includes('?') ? '&' : '?') + `t=${Date.now()}`;
+            iframes.forEach((iframe, index) => {
+                const baseSrc = index === 0 ? 
+                    'https://www.avionio.com/widget/ru/vko/departures?style=2' : 
+                    'https://www.avionio.com/widget/ru/vko/arrivals?style=2';
+                iframe.src = `${baseSrc}&t=${Date.now()}`;
             });
+            
+            console.log('🔄 VKO Avionio обновлено:', timeString);
         }
         
-        // Автозапуск
+        // СТАРТ
         document.addEventListener('DOMContentLoaded', function() {
-            refreshBoards();
-            setInterval(refreshBoards, 180000); // 3 минуты
-            setInterval(refreshBoards, 30000);  // 30 секунд
+            refreshBoards(); // Первая загрузка
+            
+            // ✅ АВТООБНОВЛЕНИЕ КАЖДУЮ МИНУТУ (60000мс)
+            setInterval(refreshBoards, 60000);
         });
     </script>
 </body>
