@@ -1,36 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<style>
-body { margin: 0; font-family: 'Courier New', monospace; background: #000; color: #0f0; font-size: 3vw; overflow: hidden; }
-table { width: 90%; border-collapse: collapse; }
-th, td { padding: 10px; text-align: center; border-bottom: 1px solid #333; }
-.status { color: #ff0; animation: blink 1s infinite; }
-@keyframes blink { 50% { opacity: 0; } }
-h1 { text-align: center; font-size: 5vw; margin: 10px; }
-</style>
+  <meta charset="UTF-8">
+  <style>
+    body { margin: 0; font-family: 'Courier New', monospace; background: #000; color: #0f0; font-size: 3vw; overflow: hidden; }
+    .header { text-align: center; font-size: 5vw; margin: 10px; color: #ff0; }
+    .section { margin: 20px; }
+    .section h2 { color: #ff0; font-size: 4vw; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; text-align: center; border-bottom: 1px solid #333; }
+    .active { color: #0f0; }
+    .scheduled { color: #ff0; animation: blink 2s infinite; }
+    .delayed { color: #ff6600; animation: blink 1s infinite; }
+    .cancelled { color: #f00; animation: blink 0.5s infinite; }
+    @keyframes blink { 50% { opacity: 0.5; } }
+  </style>
 </head>
 <body>
-<h1>Вылеты / Прилёты — SVO</h1>
-<table id="flights">
-<tr><th>Рейс</th><th>Время</th><th>Статус</th><th>Город</th></tr>
-</table>
-<script>
-async function loadFlights() {
-try {
-const res = await fetch('https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=20&access_key=a01c8c93edfa06bc5d12e15816ad3035');
-const data = await res.json();
-const table = document.getElementById('flights');
-table.innerHTML = '<tr><th>Рейс</th><th>Время</th><th>Статус</th><th>Город</th></tr>';
-data.data.slice(0,15).forEach(flight => {
-const row = table.insertRow();
-row.innerHTML = `<td>${flight.flight.iata}</td><td>${flight.departure.scheduled}</td><td class="status">${flight.flight_status}</td><td>${flight.departure.airport}</td>`;
-});
-} catch(e) { console.log('Ошибка загрузки'); }
-}
-loadFlights(); // Первая загрузка
-setInterval(loadFlights, 60000); // Обновление каждую минуту
-</script>
+  <div class="header">🛫 ШЕРЕМЕТЬЕВО (SVO) 🛬</div>
+  
+  <div class="section">
+    <h2>📤 ВЫЛЕТЫ</h2>
+    <table id="departures">
+      <tr><th>Рейс</th><th>Куда</th><th>Время</th><th>Статус</th></tr>
+    </table>
+  </div>
+  
+  <div class="section">
+    <h2>📥 ПРИЛЁТЫ</h2>
+    <table id="arrivals">
+      <tr><th>Рейс</th><th>Откуда</th><th>Время</th><th>Статус</th></tr>
+    </table>
+  </div>
+
+  <script>
+    const API_KEY = 'a01c8c93edfa06bc5d12e15816ad3035';
+    
+    async function loadDepartures() {
+      try {
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=10&access_key=${API_KEY}`);
+        const data = await res.json();
+        updateTable('departures', data.data, 'departure');
+      } catch(e) { console.error('Вылеты:', e); }
+    }
+    
+    async function loadArrivals() {
+      try {
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=10&access_key=${API_KEY}`);
+        const data = await res.json();
+        updateTable('arrivals', data.data, 'arrival');
+      } catch(e) { console.error('Прилёты:', e); }
+    }
+    
+    function updateTable(tableId, flights, type) {
+      const table = document.getElementById(tableId);
+      table.querySelector('tbody')?.remove();
+      const tbody = table.insertRow().parentNode;
+      tbody.innerHTML = '';
+      
+      flights.slice(0,8).forEach(flight => {
+        const status = flight.flight_status || 'scheduled';
+        const statusClass = status === 'active' ? 'active' : 
+                           status.includes('delay') ? 'delayed' : 
+                           status === 'cancelled' ? 'cancelled' : 'scheduled';
+        
+        const time = new Date(flight[type]?.scheduled || flight.departure?.scheduled).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+        const city = flight.arrival?.airport || flight.departure?.airport || 'N/A';
+        const flightNum = flight.flight?.iata || flight.flight?.icao || 'N/A';
+        
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${flightNum}</td>
+          <td>${city}</td>
+          <td>${time}</td>
+          <td class="${statusClass}">${status.toUpperCase()}</td>
+        `;
+      });
+    }
+    
+    // Загрузка и автообновление
+    loadDepartures();
+    loadArrivals();
+    setInterval(() => { loadDepartures(); loadArrivals(); }, 60000);
+  </script>
 </body>
 </html>
