@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airport Live Board - Compact Final</title>
+    <title>Airport Live Board - Final Compact</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
         
@@ -195,14 +195,6 @@
             letter-spacing: 0.5px;
         }
         
-        .loading {
-            text-align: center;
-            padding: 20px 5px;
-            color: #888;
-            font-size: 0.75rem;
-            font-style: italic;
-        }
-        
         @media (max-width: 1024px) {
             .boards-container { 
                 flex-direction: column; 
@@ -217,8 +209,8 @@
 <body>
     <div class="screen-frame">
         <div class="led-screen">
-            <div class="main-header" id="airportName">Loading Airport...</div>
-            <div class="airport-code" id="airportCode">-</div>
+            <div class="main-header" id="airportName">New York JFK</div>
+            <div class="airport-code" id="airportCode">JFK</div>
             
             <div class="boards-container">
                 <!-- DEPARTURES -->
@@ -233,9 +225,7 @@
                                 <th>STATUS</th>
                             </tr>
                         </thead>
-                        <tbody id="departuresBody">
-                            <tr><td colspan="4" class="loading">Loading live flights...</td></tr>
-                        </tbody>
+                        <tbody id="departuresBody"></tbody>
                     </table>
                 </div>
                 
@@ -251,15 +241,13 @@
                                 <th>STATUS</th>
                             </tr>
                         </thead>
-                        <tbody id="arrivalsBody">
-                            <tr><td colspan="4" class="loading">Loading live flights...</td></tr>
-                        </tbody>
+                        <tbody id="arrivalsBody"></tbody>
                     </table>
                 </div>
             </div>
             
             <div class="status-bar" id="statusBar">
-                <span id="statusText">Connecting to AirLabs API...</span>
+                <span id="statusText">Live AirLabs API • Updates every 5min</span>
             </div>
         </div>
     </div>
@@ -290,48 +278,34 @@
                 }
             } catch (error) {
                 console.error('API Error:', error);
-                statusEl.textContent = 'Using demo data';
-                loadDemoFlights();
+                statusEl.textContent = 'Using demo - JFK';
+                loadJFKDemo();
                 return false;
             }
         }
         
         function processFlights(flights) {
-            // Находим аэропорт с наибольшим трафиком
-            const airportStats = {};
-            flights.forEach(flight => {
-                const dep = flight.dep_iata;
-                const arr = flight.arr_iata;
-                
-                if (dep && !airportStats[dep]) airportStats[dep] = { departures: 0, arrivals: 0 };
-                if (arr && !airportStats[arr]) airportStats[arr] = { departures: 0, arrivals: 0 };
-                
-                if (dep) airportStats[dep].departures++;
-                if (arr) airportStats[arr].arrivals++;
-            });
+            // Фиксируем JFK как основной аэропорт
+            const airportCode = 'JFK';
+            const airportName = 'New York JFK';
             
-            const busiestAirport = Object.entries(airportStats)
-                .reduce((a, b) => (a[1].departures + a[1].arrivals > b[1].departures + b[1].arrivals ? a : b))[0];
-            
-            const airportName = getAirportName(busiestAirport);
             document.getElementById('airportName').textContent = airportName;
-            document.getElementById('airportCode').textContent = busiestAirport;
+            document.getElementById('airportCode').textContent = airportCode;
             
-            // Точно 10 вылетов и 10 прилетов
             const departures = flights
-                .filter(f => f.dep_iata === busiestAirport)
+                .filter(f => f.dep_iata === airportCode)
                 .slice(0, 10)
                 .map(f => formatFlight(f, 'departure'));
             
             const arrivals = flights
-                .filter(f => f.arr_iata === busiestAirport)
+                .filter(f => f.arr_iata === airportCode)
                 .slice(0, 10)
                 .map(f => formatFlight(f, 'arrival'));
             
             renderTable(departuresBody, departures);
             renderTable(arrivalsBody, arrivals);
             
-            statusEl.textContent = `${busiestAirport} | ${departures.length}/${arrivals.length} flights | ${new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}`;
+            statusEl.textContent = `JFK | ${departures.length}/${arrivals.length} flights | ${new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}`;
         }
         
         function formatFlight(flight, type) {
@@ -351,36 +325,19 @@
                 'unknown': 'On Time',
                 'cancelled': 'Cancelled'
             };
-            return statusMap[status.toLowerCase()] || 'On Time';
+            return statusMap[status?.toLowerCase()] || 'On Time';
         }
         
         function getStatusClass(statusText) {
             if (statusText === 'Scheduled') return 'scheduled';
             if (statusText === 'Landed') return 'landed';
-            if (statusText === 'Cancelled') return 'delayed';
+            if (statusText.includes('Cancelled') || statusText.includes('Delay')) return 'delayed';
             return 'ontime';
-        }
-        
-        function getAirportName(code) {
-            const airports = {
-                'JFK': 'New York JFK',
-                'LHR': 'London Heathrow', 
-                'LAX': 'Los Angeles',
-                'CDG': 'Paris CDG',
-                'DXB': 'Dubai',
-                'BER': 'Berlin BER',
-                'SVO': 'Moscow SVO',
-                'PEK': 'Beijing PEK',
-                'NRT': 'Tokyo Narita',
-                'FRA': 'Frankfurt'
-            };
-            return airports[code] || `${code} Airport`;
         }
         
         function renderTable(tbody, flights) {
             tbody.innerHTML = '';
             
-            // Заполняем до 10 строк
             for (let i = 0; i < 10; i++) {
                 if (i < flights.length) {
                     const flight = flights[i];
@@ -400,27 +357,37 @@
             }
         }
         
-        function loadDemoFlights() {
-            document.getElementById('airportName').textContent = 'London Heathrow';
-            document.getElementById('airportCode').textContent = 'LHR';
-            
+        function loadJFKDemo() {
             const demoData = {
-                departures: Array(10).fill().map((_, i) => ({
-                    time: `18:${String(10+i*5).padStart(2,'0')}`,
-                    flightNumber: `BA${100+i*10}`,
-                    city: ['JFK','CDG','DXB','LAX','AMS'][i%5],
-                    statusText: ['On Time','Delayed','Landed','On Time','Scheduled'][i%5]
-                })),
-                arrivals: Array(10).fill().map((_, i) => ({
-                    time: `18:${String(5+i*5).padStart(2,'0')}`,
-                    flightNumber: `BA${101+i*10}`,
-                    city: ['JFK','CDG','DXB','LAX','AMS'][i%5],
-                    statusText: ['Landed','On Time','Landed','On Time','On Time'][i%5]
-                }))
+                departures: [
+                    {time: '18:15', flightNumber: 'DL1931', city: 'MIA', statusText: 'On Time'},
+                    {time: '18:30', flightNumber: 'AA1357', city: 'MIA', statusText: 'Boarding'},
+                    {time: '18:45', flightNumber: 'B62104', city: 'SJU', statusText: 'Delayed'},
+                    {time: '19:00', flightNumber: 'DL5656', city: 'CMH', statusText: 'Scheduled'},
+                    {time: '19:10', flightNumber: 'UA567', city: 'ORD', statusText: 'On Time'},
+                    {time: '19:20', flightNumber: 'B65231', city: 'FLL', statusText: 'On Time'},
+                    {time: '19:30', flightNumber: 'AA758', city: 'DFW', statusText: 'Boarding'},
+                    {time: '19:40', flightNumber: 'DL1478', city: 'ATL', statusText: 'On Time'},
+                    {time: '19:50', flightNumber: 'UA1902', city: 'IAH', statusText: 'Scheduled'},
+                    {time: '20:00', flightNumber: 'B61645', city: 'BOS', statusText: 'On Time'}
+                ],
+                arrivals: [
+                    {time: '18:20', flightNumber: 'DL1234', city: 'ATL', statusText: 'Landed'},
+                    {time: '18:35', flightNumber: 'AA987', city: 'DFW', statusText: 'Landed'},
+                    {time: '18:50', flightNumber: 'UA456', city: 'ORD', statusText: 'On Time'},
+                    {time: '19:05', flightNumber: 'B51234', city: 'FLL', statusText: 'Landed'},
+                    {time: '19:15', flightNumber: 'DL2567', city: 'MIA', statusText: 'Landed'},
+                    {time: '19:25', flightNumber: 'AA321', city: 'PHX', statusText: 'On Time'},
+                    {time: '19:35', flightNumber: 'UA890', city: 'DEN', statusText: 'Landed'},
+                    {time: '19:45', flightNumber: 'B67890', city: 'SJU', statusText: 'On Time'},
+                    {time: '19:55', flightNumber: 'DL3456', city: 'DTW', statusText: 'Landed'},
+                    {time: '20:05', flightNumber: 'AA654', city: 'CLT', statusText: 'On Time'}
+                ]
             };
             
             renderTable(departuresBody, demoData.departures);
             renderTable(arrivalsBody, demoData.arrivals);
+            statusEl.textContent = `JFK Demo | 10/10 flights | ${new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}`;
         }
         
         // Запуск
