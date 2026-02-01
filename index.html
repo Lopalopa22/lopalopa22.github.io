@@ -13,12 +13,15 @@
             box-sizing: border-box;
         }
         
+        html, body {
+            overflow: hidden;
+            height: 100%;
+        }
+        
         body {
             background: linear-gradient(135deg, #0d1117 0%, #000000 100%);
             color: #FFD700;
             font-family: 'Orbitron', monospace;
-            height: 100vh;
-            overflow: hidden;
             padding: 15px;
         }
         
@@ -105,14 +108,26 @@
             height: 100%;
             border: 0;
             display: block;
+            overflow: hidden;
+        }
+        
+        /* Полное отключение скроллинга в iframe */
+        .iframe-container,
+        .iframe-container iframe,
+        .iframe-container iframe * {
+            overflow: hidden !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        
+        .iframe-container iframe::-webkit-scrollbar,
+        .iframe-container iframe *::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
         
         /* СКРЫВАЕМ ФУТЕР AVIONIO */
-        .iframe-container iframe,
-        .iframe-container iframe * {
-            pointer-events: none !important;
-        }
-        
         .iframe-container iframe a[href*="avionio"],
         .iframe-container iframe a[href*="rasp.yandex"],
         .iframe-container iframe div[style*="font-size:12px"],
@@ -125,10 +140,13 @@
             overflow: hidden !important;
         }
         
+        .iframe-container iframe,
+        .iframe-container iframe * {
+            pointer-events: none !important;
+        }
+        
         @media (max-width: 1200px) {
-            .boards-container {
-                gap: 15px;
-            }
+            .boards-container { gap: 15px; }
             .main-header {
                 font-size: 2.5rem;
                 letter-spacing: 6px;
@@ -136,9 +154,7 @@
         }
         
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
+            body { padding: 10px; }
             .main-header {
                 font-size: 2rem;
                 letter-spacing: 4px;
@@ -164,21 +180,21 @@
     <div class="main-header">ВНУКОВО</div>
     <div class="airport-code">VKO</div>
     
-    <!-- Компактные табло -->
+    <!-- СЛЕВА вылеты, СПРАВА прилеты -->
     <div class="boards-container">
-        <!-- 5 ВЫЛЕТОВ - Левая -->
+        <!-- ВЫЛЕТЫ -->
         <div class="board departures">
             <div class="board-header">ДЕПАРТЮРЫ</div>
             <div class="iframe-container">
-                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/departures?style=2&limit=5"></iframe>
+                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/departures?style=2"></iframe>
             </div>
         </div>
         
-        <!-- 5 ПРИЛЁТОВ - Правая -->
+        <!-- ПРИЛЁТЫ -->
         <div class="board arrivals">
             <div class="board-header">АРРИВАЛС</div>
             <div class="iframe-container">
-                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/arrivals?style=2&limit=5"></iframe>
+                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/arrivals?style=2"></iframe>
             </div>
         </div>
     </div>
@@ -194,10 +210,10 @@
             });
         }
         
-        // Автообновление каждую минуту (без уведомлений)
+        // Автообновление каждую минуту
         document.addEventListener('DOMContentLoaded', function() {
             refreshBoards();
-            setInterval(refreshBoards, 60000); // 1 минута
+            setInterval(refreshBoards, 60000);
         });
     </script>
 </body>
