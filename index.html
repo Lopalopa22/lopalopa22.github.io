@@ -1,40 +1,76 @@
+Вот улучшенный код с МЕНЬШИМ шрифтом и РЕАЛЬНЫМ временем (МСК):
+
+xml
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <style>
-    body { margin: 0; font-family: 'Courier New', monospace; background: #000; color: #0f0; font-size: 3vw; overflow: hidden; }
-    .header { text-align: center; font-size: 5vw; margin: 10px; color: #ff0; }
-    .section { margin: 20px; }
-    .section h2 { color: #ff0; font-size: 4vw; margin-bottom: 10px; }
+    body { 
+      margin: 0; 
+      font-family: 'Courier New', monospace; 
+      background: #000; 
+      color: #0f0; 
+      font-size: 1.8vw; /* УМЕНЬШИЛ шрифт */
+      overflow: hidden; 
+    }
+    .header { 
+      text-align: center; 
+      font-size: 3vw; /* УМЕНЬШИЛ заголовок */
+      margin: 10px; 
+      color: #ff0; 
+    }
+    .section { margin: 15px; }
+    .section h2 { 
+      color: #ff0; 
+      font-size: 2.2vw; /* УМЕНЬШИЛ */
+      margin-bottom: 8px; 
+    }
     table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; text-align: center; border-bottom: 1px solid #333; }
-    .active { color: #0f0; }
-    .scheduled { color: #ff0; animation: blink 2s infinite; }
+    th, td { 
+      padding: 6px; /* УМЕНЬШИЛ отступы */
+      text-align: center; 
+      border-bottom: 1px solid #333; 
+      font-size: 1.6vw; /* УМЕНЬШИЛ */
+    }
+    th { background: #001a00; color: #0f0; }
+    .active { color: #00ff00; }
+    .scheduled { color: #ffff00; }
     .delayed { color: #ff6600; animation: blink 1s infinite; }
-    .cancelled { color: #f00; animation: blink 0.5s infinite; }
-    @keyframes blink { 50% { opacity: 0.5; } }
+    .cancelled { color: #ff0000; animation: blink 0.5s infinite; }
+    @keyframes blink { 50% { opacity: 0.4; } }
   </style>
 </head>
 <body>
-  <div class="header">🛫 ШЕРЕМЕТЬЕВО (SVO) 🛬</div>
+  <div class="header">🛫 ШЕРЕМЕТЬЕВО (SVO) 🛬 <span id="localTime" style="font-size: 2vw; color: #0ff;"></span></div>
   
   <div class="section">
     <h2>📤 ВЫЛЕТЫ</h2>
     <table id="departures">
-      <tr><th>Рейс</th><th>Куда</th><th>Время</th><th>Статус</th></tr>
+      <thead><tr><th>Рейс</th><th>Куда</th><th>Время</th><th>Статус</th></tr></thead>
+      <tbody></tbody>
     </table>
   </div>
   
   <div class="section">
     <h2>📥 ПРИЛЁТЫ</h2>
     <table id="arrivals">
-      <tr><th>Рейс</th><th>Откуда</th><th>Время</th><th>Статус</th></tr>
+      <thead><tr><th>Рейс</th><th>Откуда</th><th>Время</th><th>Статус</th></tr></thead>
+      <tbody></tbody>
     </table>
   </div>
 
   <script>
     const API_KEY = 'a01c8c93edfa06bc5d12e15816ad3035';
+    
+    // Реальное время МСК
+    function updateClock() {
+      const now = new Date().toLocaleString('ru-RU', {timeZone: 'Europe/Moscow', 
+        hour: '2-digit', minute: '2-digit', second: '2-digit'});
+      document.getElementById('localTime').textContent = now;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
     
     async function loadDepartures() {
       try {
@@ -54,31 +90,37 @@
     
     function updateTable(tableId, flights, type) {
       const table = document.getElementById(tableId);
-      table.querySelector('tbody')?.remove();
-      const tbody = table.insertRow().parentNode;
+      const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
       
       flights.slice(0,8).forEach(flight => {
-        const status = flight.flight_status || 'scheduled';
-        const statusClass = status === 'active' ? 'active' : 
+        const status = (flight.flight_status || 'scheduled').toLowerCase();
+        const statusClass = status.includes('active') ? 'active' : 
                            status.includes('delay') ? 'delayed' : 
-                           status === 'cancelled' ? 'cancelled' : 'scheduled';
+                           status.includes('cancel') ? 'cancelled' : 'scheduled';
         
-        const time = new Date(flight[type]?.scheduled || flight.departure?.scheduled).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
-        const city = flight.arrival?.airport || flight.departure?.airport || 'N/A';
+        // РЕАЛЬНОЕ ВРЕМЯ МСК
+        const flightTime = new Date(flight[type]?.scheduled).toLocaleTimeString('ru-RU', {
+          timeZone: 'Europe/Moscow',
+          hour: '2-digit', 
+          minute: '2-digit'
+        });
+        
+        const city = (type === 'departure' ? flight.arrival?.airport : flight.departure?.airport || 'N/A')
+          .replace(' International Airport', '').replace(' Airport', '');
         const flightNum = flight.flight?.iata || flight.flight?.icao || 'N/A';
         
         const row = tbody.insertRow();
         row.innerHTML = `
           <td>${flightNum}</td>
           <td>${city}</td>
-          <td>${time}</td>
+          <td>${flightTime}</td>
           <td class="${statusClass}">${status.toUpperCase()}</td>
         `;
       });
     }
     
-    // Загрузка и автообновление
+    // Старт и автообновление каждые 60 сек
     loadDepartures();
     loadArrivals();
     setInterval(() => { loadDepartures(); loadArrivals(); }, 60000);
