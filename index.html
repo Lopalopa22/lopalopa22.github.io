@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VKO Внуково - Официальное табло</title>
+    <title>VKO Вылеты</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-        
         * {
             margin: 0;
             padding: 0;
@@ -19,87 +17,22 @@
         }
         
         body {
-            background: linear-gradient(135deg, #0d1117 0%, #000000 100%);
-            color: #FFD700;
-            font-family: 'Orbitron', monospace;
-            padding: 15px;
-        }
-        
-        .main-header {
-            text-align: center;
-            font-size: 3rem;
-            font-weight: 900;
-            letter-spacing: 8px;
-            margin-bottom: 15px;
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-            text-transform: uppercase;
-        }
-        
-        .airport-code {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #FFD700;
-            letter-spacing: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .boards-container {
-            display: flex;
-            gap: 20px;
-            height: calc(100vh - 140px);
-            justify-content: center;
-            align-items: stretch;
+            background: #0d1117;
+            padding: 10px;
         }
         
         .board {
-            flex: 1;
-            max-width: 600px;
-            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
-            border: 3px solid;
+            width: 100%;
+            height: 100%;
+            background: #1a1a2e;
+            border: 3px solid #FFD700;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-        }
-        
-        .board-header {
-            background: linear-gradient(135deg, #000 0%, #1a1a2e 100%);
-            padding: 15px;
-            text-align: center;
-            font-size: 1.6rem;
-            font-weight: 900;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            border-bottom: 2px solid;
-        }
-        
-        .departures {
-            border-color: #FFD700;
-        }
-        
-        .departures .board-header {
-            color: #FFD700;
-            text-shadow: 0 0 15px #FFD700;
-            border-bottom-color: #FFD700;
-        }
-        
-        .arrivals {
-            border-color: #FF6B6B;
-        }
-        
-        .arrivals .board-header {
-            color: #FF6B6B;
-            text-shadow: 0 0 15px #FF6B6B;
-            border-bottom-color: #FF6B6B;
         }
         
         .iframe-container {
-            height: calc(100% - 65px);
-            position: relative;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
         }
         
@@ -108,10 +41,8 @@
             height: 100%;
             border: 0;
             display: block;
-            overflow: hidden;
         }
         
-        /* Полное отключение скроллинга */
         .iframe-container,
         .iframe-container iframe,
         .iframe-container iframe * {
@@ -127,7 +58,7 @@
             height: 0 !important;
         }
         
-        /* СКРЫВАЕМ НАВИГАЦИЮ И ФУТЕР ВНУКОВО */
+        /* Скрываем всё лишнее с сайта Внуково */
         .iframe-container iframe nav,
         .iframe-container iframe header,
         .iframe-container iframe footer,
@@ -153,76 +84,23 @@
         .iframe-container iframe * {
             pointer-events: none !important;
         }
-        
-        @media (max-width: 1200px) {
-            .boards-container { gap: 15px; }
-            .main-header {
-                font-size: 2.5rem;
-                letter-spacing: 6px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .main-header {
-                font-size: 2rem;
-                letter-spacing: 4px;
-            }
-            .airport-code {
-                font-size: 1.5rem;
-                letter-spacing: 6px;
-            }
-            .boards-container {
-                flex-direction: column;
-                height: calc(100vh - 120px);
-                gap: 15px;
-            }
-            .board-header {
-                font-size: 1.3rem;
-                padding: 12px;
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- Заголовок -->
-    <div class="main-header">ВНУКОВО</div>
-    <div class="airport-code">VKO</div>
-    
-    <!-- СЛЕВА вылеты, СПРАВА прилеты -->
-    <div class="boards-container">
-        <!-- ВЫЛЕТЫ - Официальный сайт Внуково -->
-        <div class="board departures">
-            <div class="board-header">ДЕПАРТЮРЫ</div>
-            <div class="iframe-container">
-                <iframe frameborder="0" src="https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=dep"></iframe>
-            </div>
-        </div>
-        
-        <!-- ПРИЛЁТЫ - Официальный сайт Внуково -->
-        <div class="board arrivals">
-            <div class="board-header">АРРИВАЛС</div>
-            <div class="iframe-container">
-                <iframe frameborder="0" src="https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=arr"></iframe>
-            </div>
+    <div class="board">
+        <div class="iframe-container">
+            <iframe frameborder="0" src="https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=dep"></iframe>
         </div>
     </div>
 
     <script>
-        function refreshBoards() {
-            const iframes = document.querySelectorAll('.iframe-container iframe');
-            iframes.forEach((iframe, index) => {
-                const baseSrc = index === 0 ? 
-                    'https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=dep' :
-                    'https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=arr';
-                iframe.src = `${baseSrc}&t=${Date.now()}`;
-            });
+        function refreshBoard() {
+            const iframe = document.querySelector('iframe');
+            iframe.src = `https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=dep&t=${Date.now()}`;
         }
         
-        // Автообновление каждую минуту
         document.addEventListener('DOMContentLoaded', function() {
-            refreshBoards();
-            setInterval(refreshBoards, 60000);
+            setInterval(refreshBoard, 60000); // каждую минуту
         });
     </script>
 </body>
