@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VKO Внуково - Компактное табло</title>
+    <title>VKO Внуково - Официальное табло</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -111,7 +111,7 @@
             overflow: hidden;
         }
         
-        /* Полное отключение скроллинга в iframe */
+        /* Полное отключение скроллинга */
         .iframe-container,
         .iframe-container iframe,
         .iframe-container iframe * {
@@ -127,17 +127,26 @@
             height: 0 !important;
         }
         
-        /* СКРЫВАЕМ ФУТЕР AVIONIO */
-        .iframe-container iframe a[href*="avionio"],
-        .iframe-container iframe a[href*="rasp.yandex"],
-        .iframe-container iframe div[style*="font-size:12px"],
-        .iframe-container iframe div[style*="text-align: center"],
-        .iframe-container iframe .footer {
+        /* СКРЫВАЕМ НАВИГАЦИЮ И ФУТЕР ВНУКОВО */
+        .iframe-container iframe nav,
+        .iframe-container iframe header,
+        .iframe-container iframe footer,
+        .iframe-container iframe a[href],
+        .iframe-container iframe .header,
+        .iframe-container iframe .menu,
+        .iframe-container iframe .breadcrumbs,
+        .iframe-container iframe button,
+        .iframe-container iframe .logo,
+        .iframe-container iframe .social,
+        .iframe-container iframe [class*="header"],
+        .iframe-container iframe [class*="nav"],
+        .iframe-container iframe [class*="menu"],
+        .iframe-container iframe [class*="footer"] {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
             height: 0 !important;
-            overflow: hidden !important;
+            width: 0 !important;
         }
         
         .iframe-container iframe,
@@ -182,19 +191,19 @@
     
     <!-- СЛЕВА вылеты, СПРАВА прилеты -->
     <div class="boards-container">
-        <!-- ВЫЛЕТЫ -->
+        <!-- ВЫЛЕТЫ - Официальный сайт Внуково -->
         <div class="board departures">
             <div class="board-header">ДЕПАРТЮРЫ</div>
             <div class="iframe-container">
-                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/departures?style=2"></iframe>
+                <iframe frameborder="0" src="https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=dep"></iframe>
             </div>
         </div>
         
-        <!-- ПРИЛЁТЫ -->
+        <!-- ПРИЛЁТЫ - Официальный сайт Внуково -->
         <div class="board arrivals">
             <div class="board-header">АРРИВАЛС</div>
             <div class="iframe-container">
-                <iframe frameborder="0" src="https://www.avionio.com/widget/ru/vko/arrivals?style=2"></iframe>
+                <iframe frameborder="0" src="https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=arr"></iframe>
             </div>
         </div>
     </div>
@@ -204,8 +213,8 @@
             const iframes = document.querySelectorAll('.iframe-container iframe');
             iframes.forEach((iframe, index) => {
                 const baseSrc = index === 0 ? 
-                    'https://www.avionio.com/widget/ru/vko/departures?style=2' : 
-                    'https://www.avionio.com/widget/ru/vko/arrivals?style=2';
+                    'https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=dep' :
+                    'https://www.vnukovo.ru/ru/FOR-PasSENGeRS/REYsI/ONliNE-tABLO/?type=arr';
                 iframe.src = `${baseSrc}&t=${Date.now()}`;
             });
         }
