@@ -1,6 +1,3 @@
-Вот улучшенный код с МЕНЬШИМ шрифтом и РЕАЛЬНЫМ временем (МСК):
-
-xml
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,30 +8,30 @@ xml
       font-family: 'Courier New', monospace; 
       background: #000; 
       color: #0f0; 
-      font-size: 1.8vw; /* УМЕНЬШИЛ шрифт */
+      font-size: 1.8vw; 
       overflow: hidden; 
     }
     .header { 
       text-align: center; 
-      font-size: 3vw; /* УМЕНЬШИЛ заголовок */
+      font-size: 3vw; 
       margin: 10px; 
       color: #ff0; 
     }
     .section { margin: 15px; }
     .section h2 { 
       color: #ff0; 
-      font-size: 2.2vw; /* УМЕНЬШИЛ */
+      font-size: 2.2vw; 
       margin-bottom: 8px; 
     }
     table { width: 100%; border-collapse: collapse; }
     th, td { 
-      padding: 6px; /* УМЕНЬШИЛ отступы */
+      padding: 6px; 
       text-align: center; 
       border-bottom: 1px solid #333; 
-      font-size: 1.6vw; /* УМЕНЬШИЛ */
+      font-size: 1.6vw; 
     }
     th { background: #001a00; color: #0f0; }
-    .active { color: #00ff00; }
+    .active { color: #00ff00; font-weight: bold; }
     .scheduled { color: #ffff00; }
     .delayed { color: #ff6600; animation: blink 1s infinite; }
     .cancelled { color: #ff0000; animation: blink 0.5s infinite; }
@@ -45,7 +42,7 @@ xml
   <div class="header">🛫 ШЕРЕМЕТЬЕВО (SVO) 🛬 <span id="localTime" style="font-size: 2vw; color: #0ff;"></span></div>
   
   <div class="section">
-    <h2>📤 ВЫЛЕТЫ</h2>
+    <h2>📤 ВЫЛЕТЫ (5)</h2>
     <table id="departures">
       <thead><tr><th>Рейс</th><th>Куда</th><th>Время</th><th>Статус</th></tr></thead>
       <tbody></tbody>
@@ -53,7 +50,7 @@ xml
   </div>
   
   <div class="section">
-    <h2>📥 ПРИЛЁТЫ</h2>
+    <h2>📥 ПРИЛЁТЫ (5)</h2>
     <table id="arrivals">
       <thead><tr><th>Рейс</th><th>Откуда</th><th>Время</th><th>Статус</th></tr></thead>
       <tbody></tbody>
@@ -63,18 +60,19 @@ xml
   <script>
     const API_KEY = 'a01c8c93edfa06bc5d12e15816ad3035';
     
-    // Реальное время МСК
+    // Часы МСК
     function updateClock() {
       const now = new Date().toLocaleString('ru-RU', {timeZone: 'Europe/Moscow', 
-        hour: '2-digit', minute: '2-digit', second: '2-digit'});
-      document.getElementById('localTime').textContent = now;
+        hour: '2-digit', minute: '2-digit'});
+      document.getElementById('localTime').textContent = `МСК ${now}`;
     }
     updateClock();
     setInterval(updateClock, 1000);
     
     async function loadDepartures() {
       try {
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=10&access_key=${API_KEY}`);
+        // ЖИВЫЕ рейсы ближайшие 4 часа
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?dep_iata=SVO&limit=20&flight_status=all&access_key=${API_KEY}`);
         const data = await res.json();
         updateTable('departures', data.data, 'departure');
       } catch(e) { console.error('Вылеты:', e); }
@@ -82,7 +80,8 @@ xml
     
     async function loadArrivals() {
       try {
-        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=10&access_key=${API_KEY}`);
+        // ЖИВЫЕ рейсы ближайшие 4 часа  
+        const res = await fetch(`https://api.aviationstack.com/v1/flights?arr_iata=SVO&limit=20&flight_status=all&access_key=${API_KEY}`);
         const data = await res.json();
         updateTable('arrivals', data.data, 'arrival');
       } catch(e) { console.error('Прилёты:', e); }
@@ -93,13 +92,23 @@ xml
       const tbody = table.querySelector('tbody');
       tbody.innerHTML = '';
       
-      flights.slice(0,8).forEach(flight => {
+      // ФИЛЬТР: только ближайшие 4 часа + ТОЛЬКО 5 рейсов
+      const now = new Date();
+      const filteredFlights = flights
+        .filter(flight => {
+          const flightTime = new Date(flight[type]?.scheduled);
+          const diff = (flightTime - now) / (1000 * 60 * 60); // часы
+          return diff > -1 && diff < 4; // ±1 час от сейчас
+        })
+        .slice(0, 5); // ТОЛЬКО 5!
+      
+      filteredFlights.forEach(flight => {
         const status = (flight.flight_status || 'scheduled').toLowerCase();
         const statusClass = status.includes('active') ? 'active' : 
-                           status.includes('delay') ? 'delayed' : 
+                           status.includes('delay') || status.includes('late') ? 'delayed' : 
                            status.includes('cancel') ? 'cancelled' : 'scheduled';
         
-        // РЕАЛЬНОЕ ВРЕМЯ МСК
+        // ВРЕМЯ МСК
         const flightTime = new Date(flight[type]?.scheduled).toLocaleTimeString('ru-RU', {
           timeZone: 'Europe/Moscow',
           hour: '2-digit', 
@@ -107,8 +116,8 @@ xml
         });
         
         const city = (type === 'departure' ? flight.arrival?.airport : flight.departure?.airport || 'N/A')
-          .replace(' International Airport', '').replace(' Airport', '');
-        const flightNum = flight.flight?.iata || flight.flight?.icao || 'N/A';
+          .replace(' International Airport', '').replace(' Airport', '').replace(' Intl', '');
+        const flightNum = flight.flight?.iata || flight.flight?.icao?.slice(-4) || 'N/A';
         
         const row = tbody.insertRow();
         row.innerHTML = `
@@ -120,7 +129,7 @@ xml
       });
     }
     
-    // Старт и автообновление каждые 60 сек
+    // Запуск и обновление каждые 60 сек
     loadDepartures();
     loadArrivals();
     setInterval(() => { loadDepartures(); loadArrivals(); }, 60000);
